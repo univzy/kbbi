@@ -1,3 +1,25 @@
+# Nim build artifacts
 nimcache/
 nimblecache/
 htmldocs/
+
+# Copy of data files from Android app
+dictdata/
+
+# Generated files
+bin/
+docs/kbbi.js
+docs/kbbi.db
+docs/kbbi.db-shm
+docs/kbbi.db-wal
+docs/kbbi.db.bak
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo

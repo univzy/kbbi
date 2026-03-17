@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KBBI — Kamus Besar Bahasa Indonesia</title>
+  <meta name="description" content="Kamus Besar Bahasa Indonesia (KBBI) online. Cari definisi, kelas kata, contoh kalimat, dan kata turunan. Bekerja offline — database lokal.">
+  <meta name="keywords" content="KBBI, kamus, bahasa Indonesia, definisi, kamus besar">
+  <meta name="author" content="univzy">
+  <link rel="canonical" href="https://univzy.github.io/kbbi/">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://univzy.github.io/kbbi/">
+  <meta property="og:title" content="KBBI — Kamus Besar Bahasa Indonesia">
+  <meta property="og:description" content="Cari definisi, kelas kata, contoh kalimat, dan kata turunan. Bekerja offline — database lokal.">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="KBBI — Kamus Besar Bahasa Indonesia">
+  <meta name="twitter:description" content="Cari definisi, kelas kata, contoh kalimat, dan kata turunan. Bekerja offline — database lokal.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/sql.js-fts5@1.4.0/dist/sql-wasm.js"></script>
+  <script src="kbbi.js" defer></script>
+</head>
+<body>
+  <div id="load-overlay">
+    <div class="load-logo">KBBI</div>
+    <div class="load-bar-wrap"><div class="load-bar"></div></div>
+    <div id="load-status">Memulai…</div>
+  </div>
+
+  <div class="top-bar"></div>
+
+  <div class="page">
+    <header class="hero">
+      <p class="hero-kicker">Kamus Besar Bahasa Indonesia</p>
+      <h1>Temukan <em>makna</em><br>setiap kata</h1>
+      <p class="hero-sub">Database lokal · Pencarian offline · Powered by sql.js + Nim</p>
+    </header>
+
+    <div class="search-area">
+      <div class="search-row">
+        <input
+          type="text"
+          id="search-input"
+          placeholder="Ketik sebuah kata…"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="none"
+          spellcheck="false"
+        >
+        <div class="search-divider"></div>
+        <select id="search-mode" title="Mode pencarian">
+          <option value="auto">Otomatis</option>
+          <option value="prefix">Awalan</option>
+          <option value="fts">Teks penuh</option>
+          <optgroup label="Filter kategori">
+            <option value="kat-kelas">Kelas kata</option>
+            <option value="kat-bahasa">Bahasa</option>
+            <option value="kat-bidang">Bidang</option>
+            <option value="kat-ragam">Ragam</option>
+          </optgroup>
+          <optgroup label="Daftar kategori">
+            <option value="list-kelas">Daftar kelas kata</option>
+            <option value="list-bahasa">Daftar bahasa</option>
+            <option value="list-bidang">Daftar bidang</option>
+            <option value="list-ragam">Daftar ragam</option>
+          </optgroup>
+        </select>
+        <button id="search-btn">
+          <div id="spinner" class="spinner hidden"></div>
+          <span id="btn-text">Cari</span>
+        </button>
+      </div>
+
+      <div class="mode-hints">
+        <span class="mode-hint"><strong>Otomatis</strong> — coba persis dulu, lalu awalan</span>
+        <span class="mode-hint"><strong>Awalan</strong> — semua kata berawalan sama</span>
+        <span class="mode-hint"><strong>Teks penuh</strong> — cari dalam definisi (FTS5)</span>
+        <span class="mode-hint"><strong>Kelas kata / Bahasa / Bidang / Ragam</strong> — filter berdasarkan kode (mis. <em>n</em>, <em>Jw</em>, <em>Dok</em>, <em>cak</em>)</span>
+        <span class="mode-hint"><strong>Daftar …</strong> — tampilkan semua kode kategori beserta jumlah kata</span>
+      </div>
+
+      <div id="history-section" class="hidden">
+        <p class="hist-label" style="margin-top:1rem">Riwayat</p>
+        <div id="history-list"></div>
+      </div>
+    </div>
+
+    <div id="result" class="hidden"></div>
+
+    <footer>
+      <div>
+        <span class="nim-badge"><span class="nim-dot"></span>Logic: Nim → kbbi.js</span>
+        &ensp;
+        <span class="nim-badge"><span class="sqljs-dot"></span>Data: kbbi.db via sql.js-fts5 WASM</span>
+      </div>
+      <div>
+        Data resmi KBBI · Source: <a href="kbbi.nim">kbbi.nim</a> ·
+        <a href="https://nim-lang.org" target="_blank">nim-lang.org</a> ·
+        <a href="https://github.com/Erdbeergeist/sql.js-fts5" target="_blank">sql.js-fts5</a>
+      </div>
+    </footer>
+
+  </div>
+
+</body>
+</html>

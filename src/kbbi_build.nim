@@ -3,7 +3,6 @@ import pkg/[db_connector/db_sqlite]
 import kbbi/[types, crypto, index, parser, common]
 
 const
-  CHUNK_SIZE = 8192
   DESC_FILES_COUNT = 28
   BATCH_COMMIT_SIZE = 10000
 
@@ -53,12 +52,12 @@ proc main() =
   for i in 0 ..< DESC_FILES_COUNT:
     let path = dictDir / fmt"acu_desc_{i}.s"
     if not fileExists(path):
-      continue
+      raise newException(IOError, "Missing description file: " & path)
     try:
       descData[i] = decryptFile(path)
       echo fmt"  acu_desc_{i}.s -> {descData[i].len} bytes"
     except Exception as e:
-      echo fmt"  Error decrypting {path}: {e.msg}"
+      raise newException(IOError, fmt"Error decrypting {path}: {e.msg}")
 
   echo fmt"Creating {outPath}..."
   let db = open(outPath, "", "", "")

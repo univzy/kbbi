@@ -366,11 +366,11 @@ proc renderSense(s: JsObject, headword: cstring): cstring =
   if t  != "": body = body & "<span class='def-text'>" & htmlEsc(t) & "</span>"
   if ab != "": body = body & " <span class='def-abbrev' title='Kepanjangan singkatan'>(" & htmlEsc(ab) & ")</span>"
   if af != "":
-    body = body & " <span class='def-note'>bentuk tidak baku: <button class='inline-link' onclick='nimSearch(\"" & htmlEsc(af) & "\")'>" & htmlEsc(af) & "</button></span>"
+    body = body & " <span class='def-note'>bentuk tidak baku: <button class='inline-link' onclick='nimSearch(\"" & jsStrEsc(af) & "\")'>" & htmlEsc(af) & "</button></span>"
   if at != "":
-    body = body & " <span class='def-note'>lihat: <button class='inline-link' onclick='nimSearch(\"" & htmlEsc(at) & "\")'>" & htmlEsc(at) & "</button></span>"
+    body = body & " <span class='def-note'>lihat: <button class='inline-link' onclick='nimSearch(\"" & jsStrEsc(at) & "\")'>" & htmlEsc(at) & "</button></span>"
   if lk != "":
-    body = body & " <span class='def-note'>= <button class='inline-link' onclick='nimSearch(\"" & htmlEsc(lk) & "\")'>" & htmlEsc(lk) & "</button></span>"
+    body = body & " <span class='def-note'>= <button class='inline-link' onclick='nimSearch(\"" & jsStrEsc(lk) & "\")'>" & htmlEsc(lk) & "</button></span>"
   if l  != "": body = body & " <span class='def-latin'><em>" & htmlEsc(l) & "</em></span>"
   if ch != "": body = body & " <span class='def-chem'>" & htmlEsc(ch) & "</span>"
 
@@ -520,10 +520,11 @@ proc searchPrefix(query: cstring): cstring =
   var seenIds: JsObject
   {.emit: [seenIds, " = new Set();"].}
 
-  for row in getResultRows(dbQuery2("""
+  let pass1 = getResultRows(dbQuery2("""
       SELECT id, nilai, word, kind FROM entries
       WHERE nilai >= ? AND nilai < ? ORDER BY nilai LIMIT 21""",
-      norm, nextNorm)):
+      norm, nextNorm))
+  for row in pass1:
     if row.len == 0: continue
     let rid = row[0]
     var seen: bool
@@ -532,10 +533,11 @@ proc searchPrefix(query: cstring): cstring =
       {.emit: [seenIds, ".add(", rid, ");"].}
       rows.add(row)
 
-  for row in getResultRows(dbQuery2("""
+  let pass2 = getResultRows(dbQuery2("""
       SELECT id, nilai, word, kind FROM entries
       WHERE nilai_norm >= ? AND nilai_norm < ? ORDER BY nilai LIMIT 21""",
-      fnorm, nextFnorm)):
+      fnorm, nextFnorm))
+  for row in pass2:
     if row.len == 0: continue
     let rid = row[0]
     var seen: bool
@@ -560,12 +562,22 @@ proc searchPrefix(query: cstring): cstring =
   return listHtml & "</div>"
 
 proc searchFTS(query: cstring): cstring =
-  let rows = getResultRows(dbQuery("""
-    SELECT e.id, e.nilai, e.word, e.kind
-    FROM entries_fts f
-    JOIN entries e ON e.id = f.rowid
-    WHERE entries_fts MATCH ?
-    ORDER BY rank LIMIT 20""", query))
+  var safeQuery: cstring
+  {.emit: [safeQuery, " = '\"' + String(", query, ").replace(/\"/g, '\"\"') + '\"';"].}
+  var res: JsObject
+  var ftsErr: cstring = ""
+  {.emit: ["""
+    try {
+      """, res, """ = """, db, """.exec(
+        "SELECT e.id, e.nilai, e.word, e.kind FROM entries_fts f " +
+        "JOIN entries e ON e.id = f.rowid WHERE entries_fts MATCH ? ORDER BY rank LIMIT 20",
+        [""", safeQuery, """]);
+    } catch(e) { """, ftsErr, """ = String(e.message || e); }
+  """].}
+  if $ftsErr != "":
+    return "<div class='not-found'><div class='nf-icon'>∅</div>" &
+      "<p>Kueri FTS tidak valid: <em>" & htmlEsc(ftsErr) & "</em></p></div>"
+  let rows = getResultRows(res)
   if rows.len == 0:
     return "<div class='not-found'><div class='nf-icon'>∅</div>" &
       "<p>Tidak ada hasil FTS untuk <strong>&ldquo;" & htmlEsc(query) & "&rdquo;</strong>.</p></div>"
@@ -719,7 +731,8 @@ proc doSearchWith(query: cstring, mode: cstring) =
   setLoading(false)
   let res = getById("result")
   if res.isNil: return
-  updateHistory(query)
+  if query != "" and not ($mode).startsWith("list-"):
+    updateHistory(query)
   var html: cstring
   case $mode
   of "fts":         html = searchFTS(query)

@@ -1,12 +1,6 @@
 name: Deploy to GitHub Pages
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'src/**'
-      - 'pages/**'
-      - 'kbbi.nimble'
   release:
     types: [published]
   workflow_dispatch:

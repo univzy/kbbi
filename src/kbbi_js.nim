@@ -802,6 +802,9 @@ proc loadDatabase() {.async.} =
 
         if (!response) {
           const fetched = await fetch(URL, { cache: 'no-store' });
+          if (!fetched.ok) {
+            throw new Error('kbbi.db fetch failed: ' + fetched.status);
+          }
           await cache.put(URL, fetched.clone());
           response = fetched;
         }

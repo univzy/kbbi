@@ -8,11 +8,11 @@ dictdata/
 
 # Generated files
 bin/
-docs/kbbi.js
-docs/kbbi.db
-docs/kbbi.db-shm
-docs/kbbi.db-wal
-docs/kbbi.db.bak
+pages/kbbi.js
+pages/kbbi.db
+pages/kbbi.db-shm
+pages/kbbi.db-wal
+pages/kbbi.db.bak
 
 # OS
 .DS_Store

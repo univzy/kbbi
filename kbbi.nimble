@@ -16,13 +16,13 @@ task buildse, "Build database search":
   exec "nim c -d:release --out:bin/kbbi_search src/kbbi_search.nim"
 
 task buildjs, "Build JavaScript frontend":
-  exec "nim js -d:release --out:docs/kbbi.js src/kbbi_js.nim"
+  exec "nim js -d:release --out:pages/kbbi.js src/kbbi_js.nim"
 
 task buildall, "Build all targets":
   mkDir "bin"
   exec "nim c -d:release --out:bin/kbbi_build src/kbbi_build.nim"
   exec "nim c -d:release --out:bin/kbbi_search src/kbbi_search.nim"
-  exec "nim js -d:release --out:docs/kbbi.js src/kbbi_js.nim"
+  exec "nim js -d:release --out:pages/kbbi.js src/kbbi_js.nim"
 
 # Dependencies
 

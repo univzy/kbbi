@@ -196,6 +196,8 @@ proc parse*(data: seq[byte]): seq[Entry] =
 
     of 10:
       xrefKind = "baku"
+    of 11:
+      xrefKind = "dasar"
     of 12:
       xrefKind = "turunan"
     of 13:

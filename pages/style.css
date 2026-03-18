@@ -502,6 +502,7 @@ body {
   padding: 0.12rem 0.5rem; flex-shrink: 0;
 }
 .xref-kind.baku       { color: var(--green);  background: rgba(109,184,138,0.08); border: 1px solid rgba(109,184,138,0.2); }
+.xref-kind.dasar      { color: var(--text-dim); background: var(--surface3); border: 1px solid var(--border); }
 .xref-kind.lihat      { color: var(--blue);   background: rgba(106,172,224,0.08); border: 1px solid rgba(106,172,224,0.2); }
 .xref-kind.turunan    { color: var(--accent);  background: var(--accent-faint);   border: 1px solid rgba(200,164,110,0.2); }
 .xref-kind.gabungan   { color: var(--purple); background: rgba(169,143,208,0.08); border: 1px solid rgba(169,143,208,0.2); }

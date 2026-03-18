@@ -134,6 +134,7 @@ proc markerBadge(m: cstring): cstring =
 proc xrefGroupLabel(kind: cstring): cstring =
   case $kind
   of "baku":       return "<span class='xref-kind baku' title='Bentuk baku'>bentuk baku</span>"
+  of "dasar":      return "<span class='xref-kind dasar' title='Kata dasar'>kata dasar</span>"
   of "lihat":      return "<span class='xref-kind lihat' title='Lihat juga'>lihat juga</span>"
   of "turunan":    return "<span class='xref-kind turunan' title='Kata turunan'>kata turunan</span>"
   of "gabungan":   return "<span class='xref-kind gabungan' title='Kata gabungan'>kata gabungan</span>"

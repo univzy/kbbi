@@ -38,7 +38,7 @@ proc htmlEsc(s: cstring): cstring {.importjs: """
     .replace(/</g,'&lt;')
     .replace(/>/g,'&gt;')
     .replace(/"/g,'&quot;')
-    .replace(/'/g,'&#39;'); })(#)
+    .replace(/'/g,'&apos;'); })(#)
 """.}
 
 proc jsStrEsc(s: cstring): cstring {.importjs: """

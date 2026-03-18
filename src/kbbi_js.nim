@@ -33,7 +33,12 @@ proc replaceHeadword(example, headword: cstring): cstring {.importjs: """
 """.}
 
 proc htmlEsc(s: cstring): cstring {.importjs: """
-  (function(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); })(#)
+  (function(s){ return String(s||'')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;'); })(#)
 """.}
 
 proc jsStrEsc(s: cstring): cstring {.importjs: """

@@ -272,6 +272,27 @@ proc main() =
     LEFT JOIN senses s ON e.id = s.entry_id
     GROUP BY e.id""")
 
+  echo "Building kategori_counts..."
+  db.exec(sql"""
+    CREATE TABLE kategori_counts (
+      jenis TEXT NOT NULL,
+      nilai TEXT NOT NULL,
+      cnt   INTEGER NOT NULL,
+      PRIMARY KEY (jenis, nilai)
+    )""")
+  for jenis in [("bahasa", "bahasa"), ("bidang", "bidang"),
+                ("ragam",  "ragam"),  ("kelas",  "pos"),
+                ("jenis",  "markers")]:
+    let (jenisName, col) = jenis
+    db.exec(sql(
+      "INSERT INTO kategori_counts (jenis, nilai, cnt) " &
+      "SELECT '" & jenisName & "', k.nilai, COUNT(DISTINCT e.id) " &
+      "FROM kategori_" & jenisName & " k " &
+      "LEFT JOIN senses s ON (',' || s." & col & " || ',') LIKE '%,' || k.nilai || ',%' " &
+      "LEFT JOIN entries e ON s.entry_id = e.id " &
+      "GROUP BY k.nilai"))
+    echo fmt"  {jenisName}: done"
+
   db.exec(sql"PRAGMA optimize")
 
   let sz = getFileSize(outPath)

@@ -173,7 +173,8 @@ proc parse*(data: seq[byte]): seq[Entry] =
         sense.number = t[0 .. ^2]
 
       elif t notin ["\n", " ", ": ", "; ", ""]:
-        sense.text.add(t)
+        let clean = if t.startsWith("bentuk tidak baku: "): t[19..^1] else: t
+        sense.text.add(clean)
 
     of 20:
       sense.pos = argStr

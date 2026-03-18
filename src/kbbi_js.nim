@@ -20,6 +20,7 @@ proc focusEl(el: Element) {.importjs: "#.focus()".}
 proc smoothScroll(el: Element) {.importjs: "#.scrollIntoView({behavior:'smooth',block:'start'})".}
 proc addKbListener(el: Element, fn: proc(ev: KeyboardEvent)) {.importjs: "#.addEventListener('keydown',#)".}
 proc addClickListener(el: Element, fn: proc(ev: Event)) {.importjs: "#.addEventListener('click',#)".}
+proc addChangeListener(el: Element, fn: proc(ev: Event)) {.importjs: "#.addEventListener('change',#)".}
 
 proc normalizeWord(s: cstring): cstring {.importjs: "(#).toLowerCase()".}
 
@@ -137,7 +138,7 @@ proc xrefGroupLabel(kind: cstring): cstring =
   of "turunan":    return "<span class='xref-kind turunan' title='Kata turunan'>kata turunan</span>"
   of "gabungan":   return "<span class='xref-kind gabungan' title='Kata gabungan'>kata gabungan</span>"
   of "peribahasa": return "<span class='xref-kind peribahasa' title='Peribahasa'>peribahasa</span>"
-  else:            return "<span class='xref-kind'>" & htmlEsc(kind) & "</span>"
+  else:            return "<span class='xref-kind tidak-baku' title='Bentuk tidak baku'>bentuk tidak baku</span>"
 
 proc dbQuery(sql: cstring, p1: cstring): JsObject =
   var arr: JsObject
@@ -298,6 +299,7 @@ proc renderXrefs(xrArr: JsObject): cstring =
       links.add("<span class='xref-id'>#" & cstring($id) & "</span>")
   if links.len == 0: return ""
   var html: cstring = "<div class='xrefs plain'>"
+  html = html & xrefGroupLabel("")
   for lk in links: html = html & lk
   return html & "</div>"
 
@@ -573,24 +575,40 @@ proc katColName(jenis: cstring): cstring =
   of "jenis":  return "markers"
   else:        return jenis
 
-proc searchKat(jenis, nilai: cstring): cstring =
+proc searchKat(jenis, nilai, query: cstring): cstring =
   if db.isNil:
     return "<div class='error'><div class='err-icon'>⏳</div><p>Database belum selesai dimuat.</p></div>"
   let col = katColName(jenis)
+  let norm  = normalizeWord(query)
+  let fnorm = fuzzyNormWord(query)
+  let nextNorm  = nextChar(norm)
+  let nextFnorm = nextChar(fnorm)
+  let hasQuery = $query != ""
+  let katClause: cstring = "(',' || s." & col & " || ',') LIKE '%,' || ? || ',%'"
+  let wordClause: cstring =
+    if hasQuery:
+      " AND (e.nilai >= ? AND e.nilai < ? OR e.nilai_norm >= ? AND e.nilai_norm < ?)"
+    else: ""
   let likeQ: cstring =
     "SELECT DISTINCT e.id, e.nilai, e.word, e.kind FROM entries e " &
     "JOIN senses s ON e.id = s.entry_id " &
-    "WHERE (',' || s." & col & " || ',') LIKE '%,' || ? || ',%' " &
-    "ORDER BY e.nilai LIMIT 50"
+    "WHERE " & katClause & wordClause &
+    " ORDER BY e.nilai LIMIT 50"
   let countQ: cstring =
     "SELECT COUNT(DISTINCT e.id) FROM entries e " &
     "JOIN senses s ON e.id = s.entry_id " &
-    "WHERE (',' || s." & col & " || ',') LIKE '%,' || ? || ',%'"
+    "WHERE " & katClause & wordClause
   var res: JsObject
-  {.emit: [res, " = ", db, ".exec(", likeQ, ", [", nilai, "]);"].}
+  if hasQuery:
+    {.emit: [res, " = ", db, ".exec(", likeQ, ", [", nilai, ",", norm, ",", nextNorm, ",", fnorm, ",", nextFnorm, "]);"].}
+  else:
+    {.emit: [res, " = ", db, ".exec(", likeQ, ", [", nilai, "]);"].}
   let rows = getResultRows(res)
   var countRes: JsObject
-  {.emit: [countRes, " = ", db, ".exec(", countQ, ", [", nilai, "]);"].}
+  if hasQuery:
+    {.emit: [countRes, " = ", db, ".exec(", countQ, ", [", nilai, ",", norm, ",", nextNorm, ",", fnorm, ",", nextFnorm, "]);"].}
+  else:
+    {.emit: [countRes, " = ", db, ".exec(", countQ, ", [", nilai, "]);"].}
   var total: cstring = "0"
   let countRows = getResultRows(countRes)
   if countRows.len > 0 and countRows[0].len > 0:
@@ -622,23 +640,22 @@ proc searchKat(jenis, nilai: cstring): cstring =
   return listHtml
 
 proc searchList(jenis: cstring): cstring =
+  ## Mirrors --list: queries kategori_{jenis} joined with precomputed kategori_counts.
   if db.isNil:
     return "<div class='error'><div class='err-icon'>⏳</div><p>Database belum selesai dimuat.</p></div>"
-  let col       = katColName(jenis)
   let tableName: cstring = "kategori_" & jenis
   let listQ: cstring =
-    "SELECT k.nilai, k.desc, COUNT(DISTINCT e.id) AS cnt " &
+    "SELECT k.nilai, k.desc, COALESCE(c.cnt, 0) AS cnt " &
     "FROM " & tableName & " k " &
-    "LEFT JOIN senses s ON (',' || s." & col & " || ',') LIKE '%,' || k.nilai || ',%' " &
-    "LEFT JOIN entries e ON s.entry_id = e.id " &
-    "GROUP BY k.nilai ORDER BY cnt DESC"
+    "LEFT JOIN kategori_counts c ON c.jenis = '" & jenis & "' AND c.nilai = k.nilai " &
+    "ORDER BY cnt DESC"
   var res: JsObject
   {.emit: [res, " = ", db, ".exec(", listQ, ");"].}
   let rows = getResultRows(res)
   if rows.len == 0:
     return "<div class='not-found'><div class='nf-icon'>∅</div>" &
       "<p>Tidak ada kategori untuk <strong>" & htmlEsc(jenis) & "</strong>.</p></div>"
-
+ 
   var html: cstring =
     "<div class='result-header'>" &
       "<span class='result-label'>Kategori</span>" &
@@ -658,6 +675,36 @@ proc searchList(jenis: cstring): cstring =
       "</button>"
   return html & "</div>"
 
+proc getKatFilter(): cstring =
+  let el = getById("kat-filter-input")
+  if el.isNil: return ""
+  return getValue(el)
+
+proc updateKatFilterRow(mode: cstring) =
+  let row = getById("kat-filter-row")
+  let lbl = getById("kat-filter-label")
+  if row.isNil or lbl.isNil: return
+  let modeStr = $mode
+  if modeStr.startsWith("kat-"):
+    let jenis = modeStr[4..^1]
+    let labelText: cstring = case jenis
+      of "kelas":  "kelas kata"
+      of "bahasa": "bahasa"
+      of "bidang": "bidang"
+      of "ragam":  "ragam"
+      else:        cstring(jenis)
+    setInnerHTML(lbl, labelText)
+    row.classList.remove("hidden")
+    let filterInp = getById("kat-filter-input")
+    if not filterInp.isNil: focusEl(filterInp)
+  else:
+    row.classList.add("hidden")
+
+proc getMode(): cstring =
+  let sel = getById("search-mode")
+  if sel.isNil: return "auto"
+  return getValue(sel)
+
 proc doSearchWith(query: cstring, mode: cstring) =
   if db.isNil:
     setText("result", "<div class='error'><div class='err-icon'>⏳</div><p>Database belum selesai dimuat.</p></div>")
@@ -671,17 +718,15 @@ proc doSearchWith(query: cstring, mode: cstring) =
   case $mode
   of "fts":         html = searchFTS(query)
   of "prefix":      html = searchPrefix(query)
-  of "kat-kelas":   html = searchKat("kelas",  query)
-  of "kat-bahasa":  html = searchKat("bahasa", query)
-  of "kat-bidang":  html = searchKat("bidang", query)
-  of "kat-ragam":   html = searchKat("ragam",  query)
+  of "kat-kelas":   html = searchKat("kelas",  getKatFilter(), query)
+  of "kat-bahasa":  html = searchKat("bahasa", getKatFilter(), query)
+  of "kat-bidang":  html = searchKat("bidang", getKatFilter(), query)
+  of "kat-ragam":   html = searchKat("ragam",  getKatFilter(), query)
   of "list-kelas":  html = searchList("kelas")
   of "list-bahasa": html = searchList("bahasa")
   of "list-bidang": html = searchList("bidang")
   of "list-ragam":  html = searchList("ragam")
   else:
-    # auto: exact match first (try nilai then nilai_norm),
-    # fall back to prefix if nothing found
     html = searchExact(query)
     if ($html).contains("not-found"):
       let p = searchPrefix(query)
@@ -690,18 +735,14 @@ proc doSearchWith(query: cstring, mode: cstring) =
   res.classList.remove("hidden")
   smoothScroll(res)
 
-proc getMode(): cstring =
-  let sel = getById("search-mode")
-  if sel.isNil: return "auto"
-  return getValue(sel)
-
 proc doSearch*() {.exportc.} =
+  let mode = getMode()
   let inp = getById("search-input")
   if inp.isNil: return
   let v = getValue(inp)
-  if v == "": return
+  if v == "" and not ($mode).startsWith("list-"): return
   setLoading(true)
-  doSearchWith(v, getMode())
+  doSearchWith(v, mode)
 
 proc nimSearch*(word: cstring) {.exportc.} =
   let inp = getById("search-input")
@@ -731,7 +772,7 @@ proc nimKat*(jenis, nilai: cstring) {.exportc.} =
     setText("result", "<div class='error'><div class='err-icon'>⏳</div><p>Database belum selesai dimuat.</p></div>")
     setClass("result", "hidden", false)
     return
-  let html = searchKat(jenis, nilai)
+  let html = searchKat(jenis, nilai, "")
   setInnerHTML(res, html)
   res.classList.remove("hidden")
   smoothScroll(res)
@@ -776,12 +817,20 @@ proc loadDatabase() {.async.} =
     setText("load-status", "Gagal memuat database. Pastikan kbbi.db ada di folder yang sama dengan index.html.")
 
 window.onload = proc(e: Event) =
-  let inp = getById("search-input")
-  let btn = getById("search-btn")
+  let inp    = getById("search-input")
+  let btn    = getById("search-btn")
+  let sel    = getById("search-mode")
+  let katInp = getById("kat-filter-input")
   if not inp.isNil:
     addKbListener(inp, proc(ev: KeyboardEvent) =
       if ev.keyCode == 13: doSearch()
     )
+  if not katInp.isNil:
+    addKbListener(katInp, proc(ev: KeyboardEvent) =
+      if ev.keyCode == 13: doSearch()
+    )
   if not btn.isNil:
     addClickListener(btn, proc(ev: Event) = doSearch())
+  if not sel.isNil:
+    addChangeListener(sel, proc(ev: Event) = updateKatFilterRow(getMode()))
   discard loadDatabase()

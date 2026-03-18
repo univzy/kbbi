@@ -200,17 +200,13 @@ proc main() =
     if jenis notin VALID_COLUMNS:
       echo "Invalid category: " & jenis
       quit(1)
-    
-    let col = VALID_COLUMNS[jenis]
-
+     
     echo "Categories for " & jenis & ":"
     let tableName = "kategori_" & jenis
     let listQ = sql(
-      "SELECT k.nilai, k.desc, COUNT(DISTINCT e.id) as cnt " &
+      "SELECT k.nilai, k.desc, COALESCE(c.cnt, 0) as cnt " &
       "FROM " & tableName & " k " &
-      "LEFT JOIN senses s ON (',' || s." & col & " || ',') LIKE '%,' || k.nilai || ',%' " &
-      "LEFT JOIN entries e ON s.entry_id = e.id " &
-      "GROUP BY k.nilai " &
+      "LEFT JOIN kategori_counts c ON c.jenis = '" & jenis & "' AND c.nilai = k.nilai " &
       "ORDER BY cnt DESC")
     for row in db.fastRows(listQ):
       echo "  " & alignLeft(row[0], 30) & " " &

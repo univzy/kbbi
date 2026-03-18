@@ -1,0 +1,96 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'docs/**'
+      - 'kbbi.nimble'
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Download kbbi.db
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            gh release download ${{ github.event.release.tag_name }} \
+              --pattern "kbbi.db" \
+              --dir docs/ \
+              --clobber
+          else
+            gh release download \
+              --pattern "kbbi.db" \
+              --dir docs/ \
+              --clobber
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cache nimble
+        id: cache-nimble
+        uses: actions/cache@v4
+        with:
+          path: ~/.nimble
+          key: ${{ runner.os }}-nimble-${{ hashFiles('*.nimble') }}
+          restore-keys: |
+            ${{ runner.os }}-nimble-
+        if: runner.os != 'Windows'
+
+      - name: Install Nim
+        uses: nim-lang/setup-nimble-action@v1
+        with:
+          nim-version: '2.2.8'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install dependencies
+        run: nimble install -d -y
+
+      - name: Compile kbbi_js → docs/kbbi.js
+        run: nimble buildjs
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Minify JS, CSS and HTML
+        run: |
+          npx uglify-js docs/kbbi.js -o docs/kbbi.tmp.js --compress --mangle
+          mv docs/kbbi.tmp.js docs/kbbi.js
+          npx clean-css-cli docs/style.css -o docs/style.tmp.css
+          mv docs/style.tmp.css docs/style.css
+          npx html-minifier-terser docs/index.html -o docs/index.html --collapse-whitespace --remove-comments --minify-css --minify-js
+
+      - name: Upload Pages artifact
+        id: deployment
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

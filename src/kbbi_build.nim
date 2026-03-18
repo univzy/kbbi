@@ -8,8 +8,10 @@ const
   BATCH_COMMIT_SIZE = 10000
 
 proc parseEntriesAt(data: seq[byte], fromOff: int, toOff: int): seq[Entry] =
-  let endOff = if toOff > fromOff: toOff else: min(fromOff + CHUNK_SIZE, data.len)
-  let slice = data[fromOff ..< min(endOff, data.len)]
+  if fromOff < 0 or fromOff > data.len:
+    raise newException(ValueError, "Invalid description offset")
+  let endOff = if toOff > fromOff: min(toOff, data.len) else: data.len
+  let slice = data[fromOff ..< endOff]
   result = parse(slice)
 
 proc main() =

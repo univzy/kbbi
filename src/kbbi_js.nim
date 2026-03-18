@@ -766,8 +766,11 @@ proc doSearch*() {.exportc.} =
 proc nimSearch*(word: cstring) {.exportc.} =
   let inp = getById("search-input")
   if not inp.isNil: setValue(inp, word)
+  let sel = getById("search-mode")
+  if not sel.isNil: setValue(sel, "auto")
+  updateKatFilterRow("auto")
   setLoading(true)
-  doSearchWith(word, getMode())
+  doSearchWith(word, "auto")
 
 proc nimSearchById*(id: cstring) {.exportc.} =
   setLoading(false)
@@ -783,8 +786,14 @@ proc nimSearchById*(id: cstring) {.exportc.} =
   smoothScroll(res)
 
 proc nimKat*(jenis, nilai: cstring) {.exportc.} =
+  let mode: cstring = "kat-" & jenis
+  let sel = getById("search-mode")
+  if not sel.isNil: setValue(sel, mode)
+  updateKatFilterRow(mode)
+  let katInp = getById("kat-filter-input")
+  if not katInp.isNil: setValue(katInp, nilai)
   let inp = getById("search-input")
-  if not inp.isNil: setValue(inp, nilai)
+  if not inp.isNil: setValue(inp, "")
   let res = getById("result")
   if res.isNil: return
   if db.isNil:

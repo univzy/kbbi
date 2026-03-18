@@ -188,9 +188,11 @@ proc main() =
         else:
           0
 
-      var entries: seq[Entry]
-      if ol.fileIdx in descData:
-        entries = parseEntriesAt(descData[ol.fileIdx], ol.offset, nextOff)
+      if ol.fileIdx notin descData:
+        raise newException(
+          ValueError,
+          fmt"Invalid fileIdx={ol.fileIdx} for entry id={id}")
+      let entries = parseEntriesAt(descData[ol.fileIdx], ol.offset, nextOff)
 
       let word = if entries.len > 0: entries[0].word else: nilai
       let kind = if entries.len > 1: "group"

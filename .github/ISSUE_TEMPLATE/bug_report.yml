@@ -1,0 +1,116 @@
+name: "🐛 Bug Report"
+description: Laporkan bug atau perilaku yang tidak sesuai
+title: "[BUG] <judul singkat>"
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Terima kasih sudah melaporkan bug! Mohon isi formulir ini dengan lengkap agar dapat segera ditangani.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "Deskripsi"
+      description: Jelaskan bug yang ditemukan secara jelas dan singkat.
+      placeholder: Contoh — Ketika mencari kata "air" dengan mode FTS, halaman kosong dan tidak menampilkan hasil.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reprod
+    attributes:
+      label: "Langkah reproduksi"
+      description: Langkah-langkah untuk mereproduksi bug ini.
+      value: |
+        1. Buka halaman KBBI di browser
+        2. Pilih mode pencarian "..."
+        3. Ketik kata "..."
+        4. Klik tombol Cari
+        5. Lihat hasilnya — ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: "Perilaku yang diharapkan"
+      description: Apa yang seharusnya terjadi?
+      placeholder: Seharusnya menampilkan hasil pencarian untuk kata tersebut.
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: "Screenshot / rekaman layar"
+      description: Jika ada, tambahkan screenshot atau rekaman layar untuk membantu menjelaskan masalah.
+    validations:
+      required: false
+
+  - type: textarea
+    id: console
+    attributes:
+      label: "Error di konsol browser"
+      description: Buka DevTools (F12) → tab Console, salin pesan error yang muncul (jika ada).
+      render: text
+    validations:
+      required: false
+
+  - type: dropdown
+    id: search_mode
+    attributes:
+      label: "Mode pencarian"
+      description: Mode pencarian mana yang bermasalah?
+      multiple: true
+      options:
+        - Otomatis
+        - Awalan
+        - Teks penuh (FTS)
+        - Filter kelas kata
+        - Filter bahasa
+        - Filter bidang
+        - Filter ragam
+        - Daftar kategori
+        - Tidak tahu / semua mode
+    validations:
+      required: false
+
+  - type: dropdown
+    id: browser
+    attributes:
+      label: "Browser"
+      description: Browser apa yang digunakan?
+      multiple: false
+      options:
+        - Chrome / Chromium
+        - Firefox
+        - Safari
+        - Edge
+        - Brave
+        - Lainnya
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: "Sistem operasi"
+      multiple: false
+      options:
+        - Windows
+        - macOS
+        - Linux
+        - Android
+        - iOS
+    validations:
+      required: true
+
+  - type: input
+    id: db_version
+    attributes:
+      label: "Versi kbbi.db"
+      description: Versi database yang digunakan (lihat di footer halaman atau nama file release).
+      placeholder: "mis. v1.0.0"
+    validations:
+      required: false

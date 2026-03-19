@@ -1,0 +1,61 @@
+name: "✨ Feature Request"
+description: Usulkan fitur atau peningkatan baru
+title: "[FEAT] <judul singkat>"
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Punya ide fitur baru? Ceritakan di sini! Pastikan fitur yang diusulkan belum pernah dilaporkan sebelumnya.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: "Masalah yang ingin diselesaikan"
+      description: Apakah fitur ini terkait dengan masalah tertentu? Jelaskan.
+      placeholder: "Contoh — Saya sering kesulitan mencari kata turunan dari suatu kata dasar secara langsung."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: "Solusi yang diusulkan"
+      description: Jelaskan fitur yang Anda inginkan secara jelas dan ringkas.
+      placeholder: "Contoh — Tambahkan tombol di kartu hasil pencarian untuk langsung menampilkan semua kata turunan."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "Alternatif yang sudah dipertimbangkan"
+      description: Apakah ada cara lain untuk menyelesaikan masalah ini?
+    validations:
+      required: false
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: "Area yang terpengaruh"
+      description: Bagian mana dari proyek yang relevan dengan fitur ini?
+      multiple: true
+      options:
+        - Tampilan web (pages/)
+        - Logika pencarian (kbbi_js.nim)
+        - Database builder (kbbi_build.nim)
+        - CLI search (kbbi_search.nim)
+        - Parser data (parser.nim)
+        - Skema database
+        - CI / GitHub Actions
+        - Dokumentasi
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: "Konteks tambahan"
+      description: Tambahkan informasi lain, screenshot, atau referensi yang relevan.
+    validations:
+      required: false

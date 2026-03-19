@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Diskusi & Pertanyaan
+    about: Tanya jawab, ide, atau diskusi umum seputar proyek KBBI
+    url: https://github.com/univzy/kbbi/discussions/new
+  - name: Dokumentasi
+    about: Baca dokumentasi proyek sebelum membuka issue
+    url: https://github.com/univzy/kbbi/tree/main/docs

@@ -1,0 +1,71 @@
+name: "📖 Masalah Data Kamus"
+description: Laporkan kata yang hilang, definisi salah, atau data yang tidak sesuai dengan KBBI resmi
+title: "[DATA] <kata yang bermasalah>"
+labels: ["data"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gunakan formulir ini untuk melaporkan masalah pada **isi data kamus** — bukan bug teknis pada aplikasi.
+        Untuk bug teknis, gunakan [Bug Report](bug_report.yml).
+
+  - type: input
+    id: word
+    attributes:
+      label: "Kata yang bermasalah"
+      description: Tuliskan kata atau frasa yang datanya bermasalah.
+      placeholder: "mis. apa-apa"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: issue_type
+    attributes:
+      label: "Jenis masalah"
+      multiple: false
+      options:
+        - Kata tidak ditemukan (seharusnya ada di KBBI)
+        - Definisi tidak lengkap
+        - Definisi salah / berbeda dari KBBI resmi
+        - Kelas kata salah
+        - Contoh kalimat salah atau hilang
+        - Kata turunan / gabungan salah atau hilang
+        - Ejaan / suku kata salah
+        - Kategori (bahasa/bidang/ragam) salah
+        - Lainnya
+    validations:
+      required: true
+
+  - type: textarea
+    id: current
+    attributes:
+      label: "Data saat ini (di aplikasi)"
+      description: Salin atau screenshot data yang ditampilkan aplikasi.
+      placeholder: "Contoh — kata 'kenapa' tidak muncul sama sekali."
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: "Data yang seharusnya benar"
+      description: Data yang benar menurut KBBI resmi (kbbi.kemdikbud.go.id atau aplikasi Android KBBI).
+      placeholder: "Contoh — Menurut KBBI daring, 'kenapa' adalah bentuk tidak baku dari 'mengapa'."
+    validations:
+      required: true
+
+  - type: input
+    id: reference
+    attributes:
+      label: "Sumber referensi"
+      description: Link ke KBBI daring atau sumber lain yang mendukung laporan ini.
+      placeholder: "https://kbbi.kemdikbud.go.id/entri/..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: "Catatan tambahan"
+    validations:
+      required: false

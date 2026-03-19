@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         Gunakan formulir ini untuk melaporkan masalah pada **isi data kamus** — bukan bug teknis pada aplikasi.
-        Untuk bug teknis, gunakan [Bug Report](bug_report.yml).
+        Untuk bug teknis, gunakan [Bug Report](https://github.com/univzy/kbbi/issues/new?template=bug_report.yml).
 
   - type: input
     id: word

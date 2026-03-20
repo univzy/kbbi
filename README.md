@@ -1,10 +1,41 @@
 # KBBI - Kamus Besar Bahasa Indonesia
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Nim](https://img.shields.io/badge/Language-Nim-yellow.svg)](https://nim-lang.org)
-[![Build Status](https://img.shields.io/badge/Status-Active-brightgreen.svg)](#)
+<div align="center">
+  <a href="https://www.codefactor.io/repository/github/univzy/kbbi/overview/master">
+    <img title="KBBI-CodeFactor" src="https://img.shields.io/codefactor/grade/github/univzy/kbbi/main?color=blue&label=CodeFactor&style=flat-square">
+  </a>
+  <a href="https://github.com/univzy/kbbi/issues">
+    <img title="KBBI-Issues" src="https://img.shields.io/github/issues-raw/univzy/kbbi?label=Issues&color=%23ff9aa2&style=flat-square" />
+  </a>
+</div>
+<div align="center">
+  <a href="https://nim-lang.org">
+    <img title="KBBI-Language" src="https://img.shields.io/badge/Language-Nim-yellow.svg?label=Language&style=flat-square">
+  </a>
+  <a href="https://github.com/univzy/kbbi/stargazers/">
+    <img title="Stars" src="https://img.shields.io/github/stars/univzy/kbbi?label=Stars&color=%23ffb7b2&style=flat-square">
+  </a>
+  <a href="https://github.com/univzy/kbbi/network/members">
+    <img title="KBBI-Forks" src="https://img.shields.io/github/forks/univzy/kbbi?label=Forks&color=%23ffdac1&style=flat-square">
+  </a>
+  <a href="https://github.com/univzy/kbbi/watchers">
+    <img title="KBBI-Watching" src="https://img.shields.io/github/watchers/univzy/kbbi?label=Watchers&color=%23e2f0cb&style=flat-square">
+  </a>
+  <a href="https://github.com/univzy/kbbi/blob/master/LICENSE">
+    <img title="KBBI-License" src="https://img.shields.io/badge/License-MIT-blue.svg?color=%23b5ead7&style=flat-square"/>
+  </a>
+  <a href="#">
+    <img title="KBBI-Build Status" src="https://img.shields.io/badge/Status-Active-brightgreen.svg?style=flat-square"/>
+  </a>
+</div>
 
 > A modern, lightweight offline Indonesian dictionary based on KBBI, designed for fast and reliable word lookup.
+
+<div align="center">
+  <p>Support the project with a ⭐ and fork to contribute!</p>
+</div>
+
+![Preview](./assets/kbbi-page.png)
 
 ---
 

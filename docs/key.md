@@ -63,7 +63,7 @@ Where:
 - `O3.m.a(r11)` — computed value yielding `"f079cbdea460149e"` (16 hex chars)
 - `"d4036e"` — key suffix (6 hex chars)
 
-Final key: `ffef8a8d11f535b73cd24fd31ef296d0573ade68b1f079cbdea460149ed4036e`
+Final key: `ffef8a8d11f535b73cd24fd31e...d4036e`
 
 Convert to hex string format and record both key and nonce.
 
@@ -123,10 +123,10 @@ const nonce: array[8, byte] = block:
 nimble builddb
 
 # Test with the new key
-./bin/kbbi_build path/to/new_assets/ kbbi_new.db
+./bin/kbbi_build path/to/new_dictdata/ kbbi.db
 
 # If successful, the database will be populated with dictionary entries
-echo "SELECT COUNT(*) FROM entries;" | sqlite3 kbbi_new.db
+echo "SELECT COUNT(*) FROM entries;" | sqlite3 kbbi.db
 ```
 
 ---

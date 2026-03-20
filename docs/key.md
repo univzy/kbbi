@@ -153,8 +153,4 @@ echo "SELECT COUNT(*), SUM(LENGTH(text)) FROM senses;" | sqlite3 kbbi.db
 
 If output is empty or shows 0, the key is incorrect — try a different candidate.
 
----
-
-## Verification
-
 A correct decryption produces valid gzip data. If the key is wrong, `zippy` raises a decompression error during `kbbi_build`. You can also verify by checking that the first two bytes of the decrypted output are `0x1f 0x8b` (the gzip magic number).

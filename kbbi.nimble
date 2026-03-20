@@ -1,6 +1,6 @@
 # Package
 
-version       = "1.0.0"
+version       = "1.0.1"
 author        = "univzy"
 description   = "KBBI - Kamus Besar Bahasa Indonesia"
 license       = "MIT"

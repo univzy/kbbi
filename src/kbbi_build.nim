@@ -1,10 +1,10 @@
 import std/[os, strformat, strutils, tables]
 import pkg/[db_connector/db_sqlite]
-import kbbi/[types, crypto, index, parser, common]
+import kbbi/core/[types, crypto, index, parser, common]
 
 const
-  DESC_FILES_COUNT = 28
-  BATCH_COMMIT_SIZE = 10000
+  descFilesCount = 28
+  batchCommitSize = 10000
 
 proc parseEntriesAt(data: seq[byte], fromOff: int, toOff: int): seq[Entry] =
   if fromOff < 0 or fromOff > data.len:
@@ -49,7 +49,7 @@ proc main() =
 
   echo "Decrypting desc files..."
   var descData = initTable[int, seq[byte]]()
-  for i in 0 ..< DESC_FILES_COUNT:
+  for i in 0 ..< descFilesCount:
     let path = dictDir / fmt"acu_desc_{i}.s"
     if not fileExists(path):
       raise newException(IOError, "Missing description file: " & path)
@@ -226,7 +226,7 @@ proc main() =
                 senseId, group.kind, refId)
 
       inc done
-      if done mod BATCH_COMMIT_SIZE == 0:
+      if done mod batchCommitSize == 0:
         db.exec(sql"COMMIT")
         db.exec(sql"BEGIN")
         echo fmt"  {done}/{offlens.len}..."

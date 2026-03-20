@@ -139,46 +139,36 @@ proc parse*(data: seq[byte]): seq[Entry] =
       discard
 
     case code
-
     of 3:
       flushEntry()
       cur = newEntry(argStr, "normal")
       hasCur = true
-
     of 5:
       flushEntry()
       cur = newEntry(argStr, "foreign")
       hasCur = true
-
     of 1:
       flushEntry()
       cur = newEntry(argStr, "phrase")
       hasCur = true
-
     of 4:
       flushEntry()
       cur = newEntry(argStr, "nonstandard")
       hasCur = true
-
     of 0:
       flushChem()
-
       let t = argStr
-
       if t == "\n\n":
         flushSense()
-
       elif t.len > 0 and t[0].isDigit() and t[^1] == '.':
         flushSense()
         sense.number = t[0 .. ^2]
-
       elif t notin ["\n", " ", ": ", "; ", ""]:
         var clean = t
         if clean.startsWith("bentuk tidak baku: "): clean = clean[19..^1]
         elif clean.startsWith("bentuk tidak baku dari "): clean = clean[23..^1]
         elif clean == "bentuk tidak baku dari": clean = ""
         if clean.len > 0: sense.text.add(clean)
-
     of 20:
       sense.pos = argStr
     of 21:
@@ -187,7 +177,6 @@ proc parse*(data: seq[byte]): seq[Entry] =
       sense.bidang = argStr
     of 25:
       sense.ragam = argStr
-
     of 30:
       sense.markers.add("ki")
     of 31:
@@ -196,7 +185,6 @@ proc parse*(data: seq[byte]): seq[Entry] =
       sense.markers.add("akr")
     of 33:
       sense.markers.add("ukp")
-
     of 10:
       xrefKind = "baku"
     of 11:
@@ -209,61 +197,45 @@ proc parse*(data: seq[byte]): seq[Entry] =
       xrefKind = "gabungan"
     of 15:
       xrefKind = "peribahasa"
-
     of 40:
       if xrefKind.len > 0:
         var found = false
-
         for g in sense.xrefGroups.mitems:
           if g.kind == xrefKind:
             g.refs.add(argNum)
             found = true
             break
-
         if not found:
           sense.xrefGroups.add(
             newXrefGroup(xrefKind, @[argNum])
           )
-
       else:
         sense.xrefs.add(argNum)
-
     of 41:
       sense.xrefs.add(argNum)
-
     of 2:
       sense.altForm = argStr
     of 42:
       sense.altText = argStr
-
     of 50:
       sense.examples.add(argStr)
     of 61:
       sense.link = argStr
     of 60:
       sense.abbrev = argStr
-
     of 23:
       sense.latin = argStr.cleanLatin()
-
     of 24:
       chemBuf.add(argStr)
-
     of 74:
       chemBuf.add(argStr)
-
     of 62:
       chemBuf.add(argStr)
-
     of 63:
       chemBuf.add(argStr)
-
     of 255:
       flushEntry()
-
     else:
       discard
-
   flushEntry()
-
   result = entries

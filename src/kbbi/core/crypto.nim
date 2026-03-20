@@ -58,7 +58,7 @@ proc salsaHash(x: Salsa20): Salsa20 =
 
 func leLoad32(b: openArray[byte], i: int): uint32 {.inline.} =
   uint32(b[i]) or (uint32(b[i + 1]) shl 8) or
-    (uint32(b[i + 2]) shl 16) or (uint32(b[i + 3]) shl 24)
+  (uint32(b[i + 2]) shl 16) or (uint32(b[i + 3]) shl 24)
 
 proc decryptFile*(path: string): seq[byte] =
   let enc = cast[seq[byte]](readFile(path))
@@ -103,7 +103,6 @@ proc decryptFile*(path: string): seq[byte] =
       state[9] += 1
       if state[9] == 0:
         raise newException(ValueError, "Salsa20 counter overflow - file too large")
-  
   try:
     result = cast[seq[byte]](uncompress(cast[string](dec), dfGzip))
   except Exception as e:

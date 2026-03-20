@@ -1,15 +1,15 @@
 import std/[os, strutils, tables, sequtils]
 import pkg/[db_connector/db_sqlite]
-import kbbi/common
+import kbbi/core/[common]
 
 const
-  PREVIEW_LEN = 58
-  RESULTS_LIMIT = 21
-  DISPLAY_LIMIT = 20
-  FTS_LIMIT = 20
-  CATEGORY_LIMIT = 50
+  previewLen = 58
+  resultsLimit = 21
+  displayLimit = 20
+  ftsLimit = 20
+  categoryLimit = 50
 
-  VALID_COLUMNS = {
+  validColumns = {
     "kelas": "pos",
     "bahasa": "bahasa",
     "bidang": "bidang",
@@ -20,7 +20,9 @@ const
 proc normalize(s: string): string =
   result = s.toLowerAscii()
 
-proc printSense(sense: seq[string], examples: seq[string], xrefs: seq[string], indent = "  ") =
+proc printSense(
+    sense: seq[string], examples: seq[string], xrefs: seq[string],
+    indent = "  ") =
   if sense.len < 13: return
   
   var parts: seq[string]
@@ -40,10 +42,10 @@ proc printSense(sense: seq[string], examples: seq[string], xrefs: seq[string], i
   if sense[12].len > 0: parts.add(sense[12])
   
   if parts.len > 0: echo indent & parts.join(" ")
-  
+
   for ex in examples:
     echo indent & "  ~ " & ex
-  
+
   if xrefs.len > 0:
     echo indent & "  -> " & xrefs.join(", ")
 
@@ -60,7 +62,6 @@ proc printEntry(db: DbConn, id: int, nilai, word, kind: string) =
     WHERE s.entry_id = ? 
     ORDER BY s.id""", id):
 
-    # print variant header when sub-entry changes (group entries only)
     if kind == "group" and row[1] != currentVariant:
       currentVariant = row[1]
       echo "  -- " & row[1] & " (" & row[2] & ")"
@@ -82,8 +83,8 @@ proc printShort(pos, text, example: string, id, word: string) =
   var preview = ""
   preview = if pos.len > 0: "(" & pos & ") " & text else: text
   if example.len > 0: preview = preview & " - " & example
-  
-  if preview.len > PREVIEW_LEN: preview = preview[0 ..< PREVIEW_LEN] & "..."
+
+  if preview.len > previewLen: preview = preview[0 ..< previewLen] & "..."
   echo "  [" & align(id, 6) & "] " & alignLeft(word, 30) & " " & preview
 
 proc printUsage() =
@@ -139,23 +140,23 @@ proc main() =
     let jenis = paramStr(3)
     let nilai = paramStr(4)
     
-    if jenis notin VALID_COLUMNS:
+    if jenis notin validColumns:
       echo "Invalid category: " & jenis
-      echo "Valid categories: " & VALID_COLUMNS.keys.toSeq().join(", ")
+      echo "Valid categories: " & validColumns.keys.toSeq().join(", ")
       quit(1)
     
-    let col = VALID_COLUMNS[jenis]
+    let col = validColumns[jenis]
 
     var count = 0
     let likeClause = "(',' || " & col & " || ',') LIKE '%,' || ? || ',%'"
-    
+
     for row in db.fastRows(sql("""
       SELECT DISTINCT e.id, e.word, COALESCE(s.pos, ''), COALESCE(s.text, ''), COALESCE(se.example, '')
       FROM entries e
       JOIN senses s ON e.id = s.entry_id
       LEFT JOIN (SELECT sense_id, MIN(id) as exid FROM sense_examples GROUP BY sense_id) se1 ON s.id = se1.sense_id
       LEFT JOIN sense_examples se ON se.id = se1.exid
-      WHERE """ & likeClause & " ORDER BY e.nilai LIMIT " & $CATEGORY_LIMIT), nilai):
+      WHERE """ & likeClause & " ORDER BY e.nilai LIMIT " & $categoryLimit), nilai):
       printShort(row[2], row[3], row[4], row[0], row[1])
       count += 1
     
@@ -176,7 +177,7 @@ proc main() =
       JOIN entries e ON e.id = f.rowid
       WHERE entries_fts MATCH ?
       ORDER BY rank 
-      LIMIT """ & $FTS_LIMIT), query):
+      LIMIT """ & $ftsLimit), query):
       matchIds.add(row[0])
 
     if matchIds.len > 0:
@@ -197,10 +198,10 @@ proc main() =
     if paramCount() < 3: printUsage(); quit(1)
     let jenis = paramStr(3)
     
-    if jenis notin VALID_COLUMNS:
+    if jenis notin validColumns:
       echo "Invalid category: " & jenis
       quit(1)
-     
+
     echo "Categories for " & jenis & ":"
     let tableName = "kategori_" & jenis
     let listQ = sql(
@@ -211,26 +212,30 @@ proc main() =
     for row in db.fastRows(listQ):
       echo "  " & alignLeft(row[0], 30) & " " &
            alignLeft(row[1], 40) & " (" & row[2] & ")"
-
+           
   else:
-    let norm  = normalize(cmd)
+    let norm = normalize(cmd)
     let fnorm = fuzzyNorm(cmd)
-    var nextNorm  = norm;  if nextNorm.len  > 0: nextNorm[^1]  = char(ord(nextNorm[^1])  + 1)
-    var nextFnorm = fnorm; if nextFnorm.len > 0: nextFnorm[^1] = char(ord(nextFnorm[^1]) + 1)
+    var nextNorm = norm
+    if nextNorm.len > 0:
+      nextNorm[^1] = char(ord(nextNorm[^1]) + 1)
+    var nextFnorm = fnorm
+    if nextFnorm.len > 0:
+      nextFnorm[^1] = char(ord(nextFnorm[^1]) + 1)
 
     var seen: seq[string]
     var rows: seq[string]
 
     for row in db.fastRows(sql("""
       SELECT id FROM entries WHERE nilai >= ? AND nilai < ?
-      ORDER BY nilai LIMIT """ & $RESULTS_LIMIT), norm, nextNorm):
+      ORDER BY nilai LIMIT """ & $resultsLimit), norm, nextNorm):
       if row[0] notin seen:
         seen.add(row[0])
         rows.add(row[0])
 
     for row in db.fastRows(sql("""
       SELECT id FROM entries WHERE nilai_norm >= ? AND nilai_norm < ?
-      ORDER BY nilai LIMIT """ & $RESULTS_LIMIT), fnorm, nextFnorm):
+      ORDER BY nilai LIMIT """ & $resultsLimit), fnorm, nextFnorm):
       if row[0] notin seen:
         seen.add(row[0])
         rows.add(row[0])
@@ -243,7 +248,7 @@ proc main() =
       printEntry(db, parseInt(row[0]), row[1], row[2], row[3])
     else:
       echo "Found " & $rows.len & " results for '" & cmd & "':"
-      let displayCount = min(DISPLAY_LIMIT, rows.len)
+      let displayCount = min(displayLimit, rows.len)
       let idList = rows[0 ..< displayCount].join(",")
       for row in db.fastRows(sql("""
         SELECT e.id, e.word, COALESCE(s.pos, ''), COALESCE(s.text, ''), COALESCE(se.example, '')
@@ -254,7 +259,7 @@ proc main() =
         LEFT JOIN sense_examples se ON se.id = se1.exid
         WHERE e.id IN (""" & idList & ")")):
         printShort(row[2], row[3], row[4], row[0], row[1])
-      if rows.len > DISPLAY_LIMIT: echo "  ... more"
+      if rows.len > displayLimit: echo "  ... more"
 
 when isMainModule:
   main()

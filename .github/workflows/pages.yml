@@ -70,7 +70,7 @@ jobs:
         with:
           node-version: 22
 
-      - name: Minify JS, CSS and HTML
+      - name: Minify JS, CSS and HTML and copy assets
         run: |
           npx uglify-js pages/kbbi.js -o pages/kbbi.tmp.js --compress --mangle
           mv pages/kbbi.tmp.js pages/kbbi.js
@@ -79,6 +79,7 @@ jobs:
           npx clean-css-cli pages/style.css -o pages/style.tmp.css
           mv pages/style.tmp.css pages/style.css
           npx html-minifier-terser pages/index.html -o pages/index.html --collapse-whitespace --remove-comments --minify-css --minify-js
+          cp -rf assets pages/
 
       - name: Upload Pages artifact
         id: deployment

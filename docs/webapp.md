@@ -10,7 +10,7 @@ The browser dictionary runs entirely offline after the first load. There is no s
 
 ## Architecture
 
-```
+```text
 pages/index.html + style.css    shell and styles
       │
       ├── pages/kbbi.js         compiled from src/kbbi_js.nim (Nim → JS)
@@ -26,7 +26,7 @@ pages/index.html + style.css    shell and styles
 
 ## Database caching
 
-`kbbi.db` is fetched once on first load and stored in the browser's [Cache API](https://developer.mozilla.org/en-US/docs/Web/API/Cache) under a versioned key defined in `src/kbbi/version.nim`:
+`kbbi.db` is fetched once on first load and stored in the browser's [Cache API](https://developer.mozilla.org/en-US/docs/Web/API/Cache) under a versioned key defined in `src/kbbi/config.nim`:
 
 ```nim
 # src/kbbi/config.nim

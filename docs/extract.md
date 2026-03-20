@@ -80,6 +80,3 @@ Keep the extracted `dictdata/` directory — it's needed to build the database.
 - **Format:** Binary-encoded indexes (`acu_nilai.txt`, `acu_offlens.txt`) plus category metadata
 
 See [docs/crypto.md](crypto.md) for cryptography details.
-- Exposes the structure
-- Makes it reusable
-- Enables new tools to be built on top

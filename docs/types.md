@@ -286,7 +286,7 @@ The binary entry data in `acu_desc_*.s` (after Salsa20 decryption and gzip decom
 
 ## Parser flow
 
-```
+```text
 parse(data: seq[byte]): seq[Entry]
   │
   └── loop over opcodes

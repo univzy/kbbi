@@ -4,7 +4,7 @@
 
 ## Overview
 
-Each `acu_desc_N.s` file is encrypted with **Salsa20** (stream cipher) and then compressed with **gzip**. Decryption happens entirely at build time in `src/kbbi/crypto.nim` — the browser never sees encrypted data.
+Each `acu_desc_N.s` file is compressed with **gzip** and then encrypted with **Salsa20** (stream cipher). Decryption happens entirely at build time in `src/kbbi/crypto.nim` — the browser never sees encrypted data.
 
 ## Salsa20 Algorithm
 
@@ -65,6 +65,6 @@ acu_desc_N.s (encrypted)
 
 ## Counter & Overflow Protection
 
-The block counter is stored as two 32-bit words in the Salsa20 state, allowing up to 2⁶⁴ × 64 bytes ≈ **10¹⁹ bytes** per (key, nonce) pair. 
+The block counter is stored as two 32-bit words in the Salsa20 state, allowing up to 2⁶⁴ × 64 bytes ≈ **1.18 × 10²¹ bytes** per (key, nonce) pair.
 
 The implementation checks for counter overflow and raises an exception if exceeded — this is a safety measure. In practice, KBBI data is only ~30 MB, so never comes close.

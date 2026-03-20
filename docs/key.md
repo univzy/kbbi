@@ -27,7 +27,6 @@ The Salsa20 key and nonce used to decrypt `acu_desc_*.s` are hardcoded in the KB
 ### Step 1: Decompile the APK
 
 ```bash
-cs jadx
 jadx -d kbbi_src/ KBBI.apk
 ```
 

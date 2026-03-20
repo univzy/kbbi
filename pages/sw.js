@@ -1,5 +1,5 @@
-const CACHE_VERSION = 'v0.0.1';
-const SHELL_CACHE = `kbbi-shell-${CACHE_VERSION}`;
+const CACHE_VERSION = '1.0.0';
+const SHELL_CACHE = `kbbi-shell-v${CACHE_VERSION}`;
 
 const SHELL_ASSETS = [
   './index.html',

@@ -1139,9 +1139,10 @@ proc loadDatabase() {.async.} =
                 if (done) break;
                 chunks.push(value);
                 loaded += value.length;
-                const percent = Math.round((loaded / total) * 100);
+                const percent = Math.min(100, Math.round((loaded / total) * 100));
                 if (loadBar) loadBar.style.width = percent + '%';
-                if (loadStatus) loadStatus.textContent = 'Mengunduh kbbi.db… (' + percent + '%)';
+                if (loadStatus && percent !== 100) loadStatus.textContent = 'Mengunduh kbbi.db… (' + percent + '%)';
+                if (percent === 100) loadStatus.textContent = 'Menginialisasi database...';
               }
             } finally {
               reader.releaseLock();

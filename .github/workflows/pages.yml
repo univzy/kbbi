@@ -1,6 +1,12 @@
 name: Deploy to GitHub Pages
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'pages/**'
+      - 'src/kbbi_js.nim'
   release:
     types: [published]
   workflow_dispatch:
@@ -68,6 +74,8 @@ jobs:
         run: |
           npx uglify-js pages/kbbi.js -o pages/kbbi.tmp.js --compress --mangle
           mv pages/kbbi.tmp.js pages/kbbi.js
+          npx uglify-js pages/sw.js -o pages/sw.tmp.js --compress --mangle
+          mv pages/sw.tmp.js pages/sw.js
           npx clean-css-cli pages/style.css -o pages/style.tmp.css
           mv pages/style.tmp.css pages/style.css
           npx html-minifier-terser pages/index.html -o pages/index.html --collapse-whitespace --remove-comments --minify-css --minify-js

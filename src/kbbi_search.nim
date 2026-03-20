@@ -212,7 +212,7 @@ proc main() =
     for row in db.fastRows(listQ):
       echo "  " & alignLeft(row[0], 30) & " " &
            alignLeft(row[1], 40) & " (" & row[2] & ")"
-           
+
   else:
     let norm = normalize(cmd)
     let fnorm = fuzzyNorm(cmd)

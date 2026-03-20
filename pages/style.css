@@ -44,10 +44,9 @@
   --font-display: 'Saira Condensed', sans-serif;
   --font-mono:    'Share Tech Mono', monospace;
   --font-body:    'Rajdhani', sans-serif;
-}
 
-body {
-  cursor: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACkklEQVR4nO2Vz0sUYRjHP89o6ezmoT9AiTxox8Ag1MBDHuosXXLHH4EdotKgiyeRxEMFCRJlYPsjiPKcZBchog7pyYN2KNQgOkWUO+/Y6jwdGnVc29rV1Q75Pc3za76fmfd9Z2Bf+9rX/y5BVRyP8wJWWTmPR0QyewlgxTxaUVKqJDzDTCytZ/cUwAI/FNeI8MwxOt6+rLV7ASBdqgc8wwxQk1XLKAyXLNMfPyxfdw0AoNXTZsvnRY6eL0C/sRkeE1ndFQAAx+g4ypmcncqsKj2pQzJRTABr/cLiGhA+AU+A+RDqMbF47rg61m70SNEB4mUypzAcqtVbyxwHuoHvoXyLr7yLuTrUqVpRNAAA36YP+ByElX45l5MRGSpValUYYePEHBS4smKYa0trV5/qpvsUIslOOGm9iHAvCA1CbdKWRYBYWutEGALqs8amfLj6KCKvCwXYQn40wgNgOghtlIG1WioqU0mbRoVzwGJorM4SXrW5+tQxWlUIwJY3ANButMlXJoNQgYZkRN6EezpVK1YMvUAPUBYqLSEMmHJu5nNsfwsA4Lg6BrQEBG+rbU72ifjZfRdcbcjABBDdVFAuJaNy928AOTePJVwHvIDyxAePWHZPh6uVGUhsMS9AOQHitsyLcns9oQyGj12Hq5WrMAlUh8YWgG4ROk2E+/kA5FwCgC7ViGeYBaoAVBlMRaU3l7klNMVtmc/HOC8AAMdoK0oqCH+I0KzKaDHM8wJAVRzDS6AxyKTZvObbNoc/7IF1iago3bLxFQybvy+BU9s1zw8ASERlWjeWYU0LlnD6YUQ+btc8bwCAUugFlkKDd3by5AUDjEblE3BjLfaFbzs1BygtpNnY3LLdX79mY5MoBsA/10/0Oe5naKxJpwAAAABJRU5ErkJggg==") 0 8, default;
+  --page-max:     780px;
+  --page-pad:     1.25rem;
 }
 
 a,
@@ -89,6 +88,7 @@ textarea {
 html { scroll-behavior: smooth; }
 
 body {
+  cursor: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACkklEQVR4nO2Vz0sUYRjHP89o6ezmoT9AiTxox8Ag1MBDHuosXXLHH4EdotKgiyeRxEMFCRJlYPsjiPKcZBchog7pyYN2KNQgOkWUO+/Y6jwdGnVc29rV1Q75Pc3za76fmfd9Z2Bf+9rX/y5BVRyP8wJWWTmPR0QyewlgxTxaUVKqJDzDTCytZ/cUwAI/FNeI8MwxOt6+rLV7ASBdqgc8wwxQk1XLKAyXLNMfPyxfdw0AoNXTZsvnRY6eL0C/sRkeE1ndFQAAx+g4ypmcncqsKj2pQzJRTABr/cLiGhA+AU+A+RDqMbF47rg61m70SNEB4mUypzAcqtVbyxwHuoHvoXyLr7yLuTrUqVpRNAAA36YP+ByElX45l5MRGUpValUYYePEHBS4smKYa0trV5/qpvsUIslOOGm9iHAvCA1CbdKWRYBYWutEGALqs8amfLj6KCKvCwXYQn40wgNgOghtlIG1WioqU0mbRoVzwGJorM4SXrW5+tQxWlUIwJY3ANButMlXJoNQgYZkRN6EezpVK1YMvUAPUBYqLSEMmHJu5nNsfwsA4Lg6BrQEBG+rbU72ifjZfRdcbcjABBDdVFAuJaNy928AOTePJVwHvIDyxAePWHZPh6uVGUhsMS9AOQHitsyLcns9oQyGj12Hq5WrMAlUh8YWgG4ROk2E+/kA5FwCgC7ViGeYBaoAVBlMRaU3l7klNMVtmc/HOC8AAMdoK0oqCH+I0KzKaDHM8wJAVRzDS6AxyKTZvObbNoc/7IF1iago3bLxFQybvy+BU9s1zw8ASERlWjeWYU0LlnD6YUQ+btc8bwCAUugFlkKDd3by5AUDjEblE3BjLfaFbzs1BygtpNnY3LLdX79mY5MoBsA/10/0Oe5naKxJpwAAAABJRU5ErkJggg==") 0 8, default;
   font-family: var(--font-body);
   background: var(--bg);
   color: var(--text);
@@ -201,7 +201,7 @@ body {
   position: relative;
 }
 .top-bar::after {
-  content: '//  KAMUS BESAR BAHASA INDONESIA  //  NIGHT CITY EDITION  //  v4.2.1  //';
+  content: '//  KAMUS BESAR BAHASA INDONESIA  //  NIGHT CITY EDITION  //  v1.0.0  //';
   position: absolute;
   top: 5px;
   right: 1rem;
@@ -784,20 +784,6 @@ body {
   margin: 0;
 }
 .hist-label::before { content: '// '; }
-.clear-history-btn {
-  background: none;
-  border: 1px solid var(--border2);
-  color: var(--text-muted);
-  font-size: 0.65rem;
-  padding: 0.1rem 0.4rem;
-  line-height: 1;
-  transition: color .15s, border-color .15s;
-}
-.clear-history-btn:hover {
-  color: var(--red);
-  border-color: var(--red);
-}
-
 .visually-hidden {
   position: absolute;
   width: 1px; height: 1px;
@@ -1233,11 +1219,6 @@ footer a:hover { color: var(--magenta); text-shadow: 0 0 8px var(--magenta-glow)
 }
 .kat-table td:first-child { color: var(--accent); font-weight: 500; }
 .kat-table td:last-child  { color: var(--text-muted); text-align: right; }
-
-:root {
-  --page-max:   780px;
-  --page-pad:   1.25rem;
-}
 
 @media (min-width: 3840px) {
   :root {

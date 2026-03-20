@@ -354,7 +354,7 @@ body {
 }
 
 .cp-select {
-  position: static;   
+  position: relative;   
   min-width: 150px;
   flex-shrink: 0;
   border-left: 1px solid var(--border2);

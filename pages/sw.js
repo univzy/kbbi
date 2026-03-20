@@ -7,15 +7,19 @@ const SHELL_ASSETS = [
   './kbbi.js'
 ];
 
+function createOfflineResponse() {
+  return new Response('Offline — halaman tidak tersedia', {
+    status: 503,
+    statusText: 'Service Unavailable',
+    headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+  });
+}
+
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(SHELL_CACHE).then((cache) =>
-      Promise.allSettled(
-        SHELL_ASSETS.map(asset =>
-          cache.add(asset).catch(err => console.warn('[SW] Failed to cache:', asset, err))
-        )
-      )
-    ).then(() => self.skipWaiting())
+    caches.open(SHELL_CACHE)
+      .then((cache) => cache.addAll(SHELL_ASSETS))
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -49,15 +53,21 @@ self.addEventListener('fetch', (event) => {
           return response;
         }
         const clone = response.clone();
-        caches.open(SHELL_CACHE).then((cache) => cache.put(request, clone));
+        event.waitUntil(
+          caches.open(SHELL_CACHE)
+            .then((cache) => cache.put(request, clone))
+            .catch((err) => console.warn('[SW] Failed to cache runtime response:', request.url, err))
+        );
         return response;
-      }).catch(() => 
-        new Response('Offline — halaman tidak tersedia', {
-          status: 503,
-          statusText: 'Service Unavailable',
-          headers: { 'Content-Type': 'text/plain; charset=utf-8' }
-        })
-      );
+      }).catch(() => {
+        if (request.mode === 'navigate') {
+          return caches.match('./index.html').then((cachedIndex) => {
+            if (cachedIndex) return cachedIndex;
+            return createOfflineResponse();
+          });
+        }
+        return createOfflineResponse();
+      });
     })
   );
 });

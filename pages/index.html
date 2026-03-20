@@ -4,12 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KBBI — Kamus Besar Bahasa Indonesia</title>
-  <!-- SEO -->
   <meta name="description" content="Kamus Besar Bahasa Indonesia (KBBI) online. Cari definisi, kelas kata, contoh kalimat, dan kata turunan. Bekerja offline — database lokal.">
   <meta name="keywords" content="KBBI, kamus, bahasa Indonesia, definisi, kamus besar">
   <meta name="author" content="univzy">
   <link rel="canonical" href="https://univzy.github.io/kbbi/">
-  <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://univzy.github.io/kbbi/">
   <meta property="og:title" content="KBBI — Kamus Besar Bahasa Indonesia">
@@ -17,14 +15,11 @@
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="KBBI — Kamus Besar Bahasa Indonesia">
   <meta name="twitter:description" content="Cari definisi, kelas kata, contoh kalimat, dan kata turunan. Bekerja offline — database lokal.">
-  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
-  <!-- Styles -->
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Saira+Condensed:wght@300;400;600;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
-  <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/sql.js-fts5@1.4.0/dist/sql-wasm.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sql.js-fts5@1.4.0/dist/sql-wasm.js" defer></script>
   <script src="kbbi.js" defer></script>
 </head>
 <body>
@@ -40,13 +35,14 @@
   <div class="page">
 
     <header class="hero">
-      <p class="hero-kicker">Kamus Besar Bahasa Indonesia</p>
-      <h1>Temukan <em>makna</em><br>setiap kata</h1>
+      <h2 class="hero-kicker">Kamus Besar Bahasa Indonesia</h2>
+      <h1>Temukan <em data-text="makna">makna</em><br>setiap kata</h1>
       <p class="hero-sub">Database lokal · Pencarian offline · Powered by sql.js + Nim</p>
     </header>
 
     <div class="search-area">
       <div class="search-row">
+        <label for="search-input" class="visually-hidden">Cari kata dalam KBBI</label>
         <input
           type="text"
           id="search-input"
@@ -55,9 +51,11 @@
           autocorrect="off"
           autocapitalize="none"
           spellcheck="false"
+          title="Ketik satu kata untuk mencari. Tekan Enter atau klik tombol Cari."
         >
         <div class="search-divider"></div>
-        <select id="search-mode" title="Mode pencarian">
+
+        <select id="search-mode" title="Mode pencarian" style="display:none" aria-hidden="true">
           <option value="auto">Otomatis</option>
           <option value="prefix">Awalan</option>
           <option value="fts">Teks penuh</option>
@@ -74,7 +72,116 @@
             <option value="list-ragam">Daftar ragam</option>
           </optgroup>
         </select>
-        <button id="search-btn">
+
+        <div class="cp-select" id="cp-select" role="combobox" aria-haspopup="listbox" aria-expanded="false" tabindex="0">
+          <div class="cp-select__trigger">
+            <span class="cp-select__glyph">☒</span>
+            <span class="cp-select__label" id="cp-select-label">Otomatis</span>
+            <span class="cp-select__chevron">
+              <svg width="9" height="6" viewBox="0 0 9 6" fill="none">
+                <path d="M0.5 0.5L4.5 4.5L8.5 0.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/>
+              </svg>
+            </span>
+          </div>
+
+          <div class="cp-select__panel" role="listbox" id="cp-select-panel">
+            <div class="cp-select__scanline" aria-hidden="true"></div>
+            <div class="cp-select__panel-inner">
+
+            <div class="cp-select__group-hdr">
+              <span class="cp-grp__line"></span>
+              <span class="cp-grp__text cp-grp__text--yellow">// mode</span>
+              <span class="cp-grp__line cp-grp__line--yellow"></span>
+            </div>
+
+            <div class="cp-select__option cp-select__option--selected" data-value="auto" role="option" tabindex="-1">
+              <span class="cp-opt__dot"></span>
+              <span class="cp-opt__name">Otomatis</span>
+              <span class="cp-opt__hint">persis → awalan</span>
+              <span class="cp-opt__check">⚠</span>
+            </div>
+            <div class="cp-select__option" data-value="prefix" role="option" tabindex="-1">
+              <span class="cp-opt__dot"></span>
+              <span class="cp-opt__name">Awalan</span>
+              <span class="cp-opt__hint">prefix match</span>
+              <span class="cp-opt__check">⚠</span>
+            </div>
+            <div class="cp-select__option" data-value="fts" role="option" tabindex="-1">
+              <span class="cp-opt__dot"></span>
+              <span class="cp-opt__name">Teks penuh</span>
+              <span class="cp-opt__hint">FTS5 fulltext</span>
+              <span class="cp-opt__check">⚠</span>
+            </div>
+
+            <div class="cp-select__group-hdr">
+              <span class="cp-grp__line"></span>
+              <span class="cp-grp__text cp-grp__text--cyan">// filter</span>
+              <span class="cp-grp__line cp-grp__line--cyan"></span>
+            </div>
+
+            <div class="cp-select__option cp-select__option--cyan" data-value="kat-kelas" role="option" tabindex="-1">
+              <span class="cp-opt__dot cp-opt__dot--cyan"></span>
+              <span class="cp-opt__name">Kelas kata</span>
+              <span class="cp-opt__tag">kat</span>
+              <span class="cp-opt__check">⚠</span>
+            </div>
+            <div class="cp-select__option cp-select__option--cyan" data-value="kat-bahasa" role="option" tabindex="-1">
+              <span class="cp-opt__dot cp-opt__dot--cyan"></span>
+              <span class="cp-opt__name">Bahasa</span>
+              <span class="cp-opt__tag">kat</span>
+              <span class="cp-opt__check">⚠</span>
+            </div>
+            <div class="cp-select__option cp-select__option--cyan" data-value="kat-bidang" role="option" tabindex="-1">
+              <span class="cp-opt__dot cp-opt__dot--cyan"></span>
+              <span class="cp-opt__name">Bidang</span>
+              <span class="cp-opt__tag">kat</span>
+              <span class="cp-opt__check">⚠</span>
+            </div>
+            <div class="cp-select__option cp-select__option--cyan" data-value="kat-ragam" role="option" tabindex="-1">
+              <span class="cp-opt__dot cp-opt__dot--cyan"></span>
+              <span class="cp-opt__name">Ragam</span>
+              <span class="cp-opt__tag">kat</span>
+              <span class="cp-opt__check">⚠</span>
+            </div>
+
+            <div class="cp-select__group-hdr">
+              <span class="cp-grp__line"></span>
+              <span class="cp-grp__text cp-grp__text--mag">// daftar</span>
+              <span class="cp-grp__line cp-grp__line--mag"></span>
+            </div>
+
+            <div class="cp-select__option cp-select__option--mag" data-value="list-kelas" role="option" tabindex="-1">
+              <span class="cp-opt__dot cp-opt__dot--mag"></span>
+              <span class="cp-opt__name">Daftar kelas kata</span>
+              <span class="cp-opt__tag cp-opt__tag--mag">list</span>
+              <span class="cp-opt__check">⚠</span>
+            </div>
+            <div class="cp-select__option cp-select__option--mag" data-value="list-bahasa" role="option" tabindex="-1">
+              <span class="cp-opt__dot cp-opt__dot--mag"></span>
+              <span class="cp-opt__name">Daftar bahasa</span>
+              <span class="cp-opt__tag cp-opt__tag--mag">list</span>
+              <span class="cp-opt__check">⚠</span>
+            </div>
+            <div class="cp-select__option cp-select__option--mag" data-value="list-bidang" role="option" tabindex="-1">
+              <span class="cp-opt__dot cp-opt__dot--mag"></span>
+              <span class="cp-opt__name">Daftar bidang</span>
+              <span class="cp-opt__tag cp-opt__tag--mag">list</span>
+              <span class="cp-opt__check">⚠</span>
+            </div>
+            <div class="cp-select__option cp-select__option--mag" data-value="list-ragam" role="option" tabindex="-1">
+              <span class="cp-opt__dot cp-opt__dot--mag"></span>
+              <span class="cp-opt__name">Daftar ragam</span>
+              <span class="cp-opt__tag cp-opt__tag--mag">list</span>
+              <span class="cp-opt__check">⚠</span>
+            </div>
+
+            </div>
+            <span class="cp-corner cp-corner--tl" aria-hidden="true"></span>
+            <span class="cp-corner cp-corner--br" aria-hidden="true"></span>
+          </div>
+        </div>
+
+        <button id="search-btn" title="Klik untuk mencari (atau tekan Enter)" aria-label="Tombol pencarian">
           <div id="spinner" class="spinner hidden"></div>
           <span id="btn-text">Cari</span>
         </button>
@@ -90,24 +197,30 @@
           autocorrect="off"
           autocapitalize="none"
           spellcheck="false"
+          title="Masukkan kode kategori untuk memfilter hasil. Contoh: n (nomina), Jw (Jawa), Dok (Dokumen)."
         >
       </div>
 
       <div class="mode-hints">
-        <span class="mode-hint"><strong>Otomatis</strong> — coba persis dulu, lalu awalan</span>
-        <span class="mode-hint"><strong>Awalan</strong> — semua kata berawalan sama</span>
-        <span class="mode-hint"><strong>Teks penuh</strong> — cari dalam definisi (FTS5)</span>
-        <span class="mode-hint"><strong>Kelas / Bahasa / Bidang / Ragam</strong> — kata (opsional) + kode mis. <em>n</em>, <em>Jw</em>, <em>Dok</em>, <em>cak</em></span>
-        <span class="mode-hint"><strong>Daftar …</strong> — tampilkan semua kode kategori beserta jumlah kata</span>
+        <span class="mode-hint" title="Coba pencarian persis dulu, jika tidak ketemu lanjut ke pencarian awalan"><strong>Otomatis</strong> — coba persis dulu, lalu awalan</span>
+        <span class="mode-hint" title="Temukan semua kata yang zdimukai dengan teks yang sama"><strong>Awalan</strong> — semua kata berawalan sama</span>
+        <span class="mode-hint" title="Cari dalam seluruh definisi dan contoh menggunakan FTS5"><strong>Teks penuh</strong> — cari dalam definisi (FTS5)</span>
+        <span class="mode-hint" title="Masukkan kode kategori opsional dengan kata untuk filter hasil"><strong>Kelas / Bahasa / Bidang / Ragam</strong> — kata (opsional) + kode mis. <em>n</em>, <em>Jw</em>, <em>Dok</em>, <em>cak</em></span>
+        <span class="mode-hint" title="Tampilkan semua kode kategori beserta jumlah kata untuk setiap kode"><strong>Daftar …</strong> — tampilkan semua kode kategori beserta jumlah kata</span>
       </div>
 
       <div id="history-section" class="hidden">
-        <p class="hist-label" style="margin-top:1rem">Riwayat</p>
-        <div id="history-list"></div>
+        <div class="history-header">
+          <p class="hist-label" role="heading" aria-level="3">Riwayat</p>
+          <button id="clear-history-btn" class="clear-history-btn" title="Hapus semua riwayat pencarian" aria-label="Hapus riwayat">
+            <span>✕</span>
+          </button>
+        </div>
+        <div id="history-list" role="list" aria-label="Riwayat pencarian terakhir"></div>
       </div>
     </div>
 
-    <div id="result" class="hidden"></div>
+    <div id="result" class="hidden" aria-live="polite" aria-label="Hasil pencarian"></div>
 
     <footer>
       <div>
@@ -123,6 +236,15 @@
     </footer>
 
   </div>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js')
+      .catch((err) => {
+        console.warn('[App] Service Worker registration failed:', err);
+      });
+    }
+  </script>
 
 </body>
 </html>

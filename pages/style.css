@@ -201,7 +201,7 @@ body {
   position: relative;
 }
 .top-bar::after {
-  content: '//  KAMUS BESAR BAHASA INDONESIA  //  NIGHT CITY EDITION  //  v1.0.0  //';
+  content: '//  KAMUS BESAR BAHASA INDONESIA  //  NIGHT CITY EDITION  //  v1.0.1  //';
   position: absolute;
   top: 5px;
   right: 1rem;

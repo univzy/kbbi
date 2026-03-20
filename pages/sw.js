@@ -8,7 +8,7 @@ const SHELL_ASSETS = [
 ];
 
 function createOfflineResponse() {
-  return new Response('Offline — halaman tidak tersedia', {
+  return new Response('Layanan tidak tersedia — berkas offline tidak ditemukan', {
     status: 503,
     statusText: 'Service Unavailable',
     headers: { 'Content-Type': 'text/plain; charset=utf-8' }

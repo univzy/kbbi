@@ -51,14 +51,11 @@ self.addEventListener('fetch', (event) => {
         const clone = response.clone();
         caches.open(SHELL_CACHE).then((cache) => cache.put(request, clone));
         return response;
-      }).catch(() =>
-        caches.match(request).then((cached) => {
-          if (cached) return cached;
-          return new Response('Offline — halaman tidak tersedia', {
-            status: 503,
-            statusText: 'Service Unavailable',
-            headers: { 'Content-Type': 'text/plain; charset=utf-8' }
-          });
+      }).catch(() => 
+        new Response('Offline — halaman tidak tersedia', {
+          status: 503,
+          statusText: 'Service Unavailable',
+          headers: { 'Content-Type': 'text/plain; charset=utf-8' }
         })
       );
     })

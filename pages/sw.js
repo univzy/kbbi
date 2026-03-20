@@ -1,4 +1,4 @@
-const CACHE_VERSION = '1.0.0';
+const CACHE_VERSION = '1.0.1';
 const SHELL_CACHE = `kbbi-shell-v${CACHE_VERSION}`;
 
 const SHELL_ASSETS = [

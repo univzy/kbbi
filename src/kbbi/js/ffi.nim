@@ -1,41 +1,186 @@
 import std/[dom, jsffi, asyncjs]
 
-proc arrayBuffer*(resp: JsObject): Future[JsObject] {.importjs: "#.arrayBuffer()".}
-proc uint8Array*(buf: JsObject): JsObject {.importjs: "new Uint8Array(#)".}
-proc initSqlJs*(cfg: JsObject): Future[JsObject] {.importjs: "initSqlJs(#)".}
-proc newDb*(SQL: JsObject, data: JsObject): JsObject {.importjs: "new #.Database(#)".}
+proc arrayBuffer*(resp: JsObject): Future[JsObject] {.importjs: """
+  (function(r) {
+    return r.arrayBuffer(); 
+  })(#)
+""".}
 
-proc jsGet*(obj: JsObject, key: cstring): JsObject {.importjs: "#[#]".}
-proc jsLength*(arr: JsObject): int {.importjs: "(#||[]).length".}
-proc jsItem*(arr: JsObject, idx: int): JsObject {.importjs: "#[#]".}
-proc jsStr*(obj: JsObject): cstring {.importjs: "String(#||'')".}
-proc jsInt*(obj: JsObject): int {.importjs: "(Number(#)||0)".}
+proc uint8Array*(buf: JsObject): JsObject {.importjs: """
+  (function(b) {
+    return new Uint8Array(b); 
+  })(#)
+""".}
 
-proc setInnerHTML*(el: Element, html: cstring) {.importjs: "#.innerHTML = #".}
-proc getValue*(el: Element): cstring {.importjs: "#.value".}
-proc setValue*(el: Element, v: cstring) {.importjs: "#.value = #".}
-proc getById*(id: cstring): Element {.importjs: "document.getElementById(#)".}
-proc focusEl*(el: Element) {.importjs: "#.focus()".}
-proc smoothScroll*(el: Element) {.importjs: "#.scrollIntoView({behavior:'smooth',block:'start'})".}
+proc initSqlJs*(cfg: JsObject): Future[JsObject] {.importjs: """
+  (function(c) {
+    return initSqlJs(c); 
+  })(#)
+""".}
 
-proc addKbListener*(el: Element, fn: proc(ev: KeyboardEvent)) {.importjs: "#.addEventListener('keydown',#)".}
-proc addClickListener*(el: Element, fn: proc(ev: Event)) {.importjs: "#.addEventListener('click',#)".}
-proc addChangeListener*(el: Element, fn: proc(ev: Event)) {.importjs: "#.addEventListener('change',#)".}
-proc querySelectorAll*(el: Element, sel: cstring): JsObject {.importjs: "#.querySelectorAll(#)".}
-proc contains*(el: Element, other: Element): bool {.importjs: "#.contains(#)".}
+proc newDb*(SQL: JsObject, data: JsObject): JsObject {.importjs: """
+  (function(sql, d) {
+    return new sql.Database(d); 
+  })(#, #)
+""".}
 
-proc getAttribute*(el: Element, name: cstring): cstring {.importjs: "#.getAttribute(#)".}
-proc setAttribute*(el: Element, name, value: cstring) {.importjs: "#.setAttribute(#,#)".}
-proc scrollIntoViewNearest*(el: Element) {.importjs: "#.scrollIntoView({block:'nearest'})".}
-proc dispatchChange*(el: Element) {.importjs: "#.dispatchEvent(new Event('change',{bubbles:true}))".}
+proc jsGet*(obj: JsObject, key: cstring): JsObject {.importjs: """
+  (function(o, k) {
+    return o[k];
+  })(#, #)
+""".}
 
-proc elTextContent*(el: Element, s: cstring) {.importjs: "#.textContent = #".}
-proc dataValue*(el: Element): cstring {.importjs: "#.dataset.value".}
-proc closestOpt*(el: Element): Element {.importjs: "#.closest('.cp-select__option[data-value]')".}
+proc jsLength*(o: JsObject): int {.importjs: """
+  (function(v) {
+    return v==null||v==undefined ? 0 :
+           Array.isArray(v) ? v.length :
+           typeof v==="object" ? Object.keys(v).length : 0;
+  })(#)
+""".}
 
-proc setGlobalCpSelect*(fn: proc(v: cstring)) {.importjs: "window.cpSelectSetValue = #".}
-proc localStorageSetItem*(key, value: cstring) {.importjs: "localStorage.setItem(#, #)".}
-proc localStorageGetItem*(key: cstring): cstring {.importjs: "localStorage.getItem(#) || ''".}
+proc jsItem*(arr: JsObject, idx: int): JsObject {.importjs: """
+  (function(a, i) {
+    return a[i];
+  })(#, #)
+""".}
+
+proc jsStr*(obj: JsObject): cstring {.importjs: """
+  (function(v) {
+    return String(v || '');
+  })(#)
+""".}
+
+proc jsInt*(obj: JsObject): int {.importjs: """
+  (function(v) {
+    return Number(v) || 0; 
+  })(#)
+""".}
+
+proc setInnerHTML*(el: Element, html: cstring) {.importjs: """
+  (function(e, h) {
+    e.innerHTML = h;
+  })(#, #)
+""".}
+
+proc getValue*(el: Element): cstring {.importjs: """
+  (function(e) {
+    return e.value;
+  })(#)
+""".}
+
+proc setValue*(el: Element, v: cstring) {.importjs: """
+  (function(e, val) {
+    e.value = val;
+  })(#, #)
+""".}
+
+proc getById*(id: cstring): Element {.importjs: """
+  (function(i) {
+    return document.getElementById(i);
+  })(#)
+""".}
+
+proc focusEl*(el: Element) {.importjs: """
+  (function(e) {
+    e.focus();
+  })(#)
+""".}
+
+proc smoothScroll*(el: Element) {.importjs: """
+  (function(e) {
+    e.scrollIntoView({behavior: 'smooth', block: 'start'});
+  })(#)
+""".}
+
+proc addKbListener*(el: Element, fn: proc(ev: KeyboardEvent)) {.importjs: """
+  (function(e, f) {
+    e.addEventListener('keydown', f);
+  })(#, #)
+""".}
+
+proc addClickListener*(el: Element, fn: proc(ev: Event)) {.importjs: """
+  (function(e, f) {
+    e.addEventListener('click', f);
+  })(#, #)
+""".}
+
+proc addChangeListener*(el: Element, fn: proc(ev: Event)) {.importjs: """
+  (function(e, f) {
+    e.addEventListener('change', f);
+  })(#, #)
+""".}
+
+proc querySelectorAll*(el: Element, sel: cstring): JsObject {.importjs: """
+  (function(e, s) {
+    return e.querySelectorAll(s);
+  })(#, #)
+""".}
+
+proc contains*(el: Element, other: Element): bool {.importjs: """
+  (function(e, o) {
+    return e.contains(o);
+  })(#, #)
+""".}
+
+proc getAttribute*(el: Element, name: cstring): cstring {.importjs: """
+  (function(e, n) {
+    return e.getAttribute(n);
+  })(#, #)
+""".}
+
+proc setAttribute*(el: Element, name, value: cstring) {.importjs: """
+  (function(e, n, v) {
+    e.setAttribute(n, v);
+  })(#, #, #)
+""".}
+
+proc scrollIntoViewNearest*(el: Element) {.importjs: """
+  (function(e) {
+    e.scrollIntoView({block: 'nearest'});
+  })(#)
+""".}
+
+proc dispatchChange*(el: Element) {.importjs: """
+  (function(e) {
+    e.dispatchEvent(new Event('change', {bubbles: true}));
+  })(#)
+""".}
+
+proc elTextContent*(el: Element, s: cstring) {.importjs: """
+  (function(e, t) {
+    e.textContent = t;
+  })(#, #)
+""".}
+
+proc dataValue*(el: Element): cstring {.importjs: """
+  (function(e) {
+    return e.dataset.value;
+  })(#)
+""".}
+
+proc closestOpt*(el: Element): Element {.importjs: """
+  (function(e) {
+    return e.closest('.cp-select__option[data-value]');
+  })(#)
+""".}
+
+proc setGlobalCpSelect*(fn: proc(v: cstring)) {.importjs: """
+  (function(f) {
+    window.cpSelectSetValue = f;
+  })(#)
+""".}
+
+proc localStorageSetItem*(key, value: cstring) {.importjs: """
+  (function(k, v) {
+    localStorage.setItem(k, v);
+  })(#, #)
+""".}
+
+proc localStorageGetItem*(key: cstring): cstring {.importjs: """
+  (function(k) {
+    return localStorage.getItem(k) || '';
+  })(#)
+""".}
 
 proc normalizeWord*(s: cstring): cstring {.importjs: """
   (function(s) {

@@ -1,2 +1,2 @@
---d:release
---opt:size
+switch("define", "release")
+switch("opt", "size")

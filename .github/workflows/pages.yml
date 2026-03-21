@@ -72,9 +72,9 @@ jobs:
 
       - name: Minify JS, CSS and HTML and copy assets
         run: |
-          npx uglify-js pages/kbbi.js -o pages/kbbi.tmp.js --compress --mangle
+          npx uglify-js pages/kbbi.js -o pages/kbbi.tmp.js --compress --mangle --toplevel
           mv pages/kbbi.tmp.js pages/kbbi.js
-          npx uglify-js pages/sw.js -o pages/sw.tmp.js --compress --mangle
+          npx uglify-js pages/sw.js -o pages/sw.tmp.js --compress --mangle --toplevel
           mv pages/sw.tmp.js pages/sw.js
           npx clean-css-cli pages/style.css -o pages/style.tmp.css
           mv pages/style.tmp.css pages/style.css

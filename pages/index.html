@@ -37,7 +37,7 @@
 <body>
 
   <div id="load-overlay">
-    <div class="load-logo">KBBI</div>
+    <div class="load-logo">re:KBBI</div>
     <div class="load-bar-wrap"><div class="load-bar"></div></div>
     <div id="load-status">Memulai…</div>
   </div>
@@ -241,9 +241,9 @@
         <span class="nim-badge"><span class="sqljs-dot"></span>Data: kbbi.db → sql.js wasm</span>
       </div>
       <div>
-        Data resmi KBBI · Source: <a href="https://github.com/univzy/kbbi" target="_blank">kbbi.nim</a> ·
-        <a href="https://nim-lang.org" target="_blank">nim-lang.org</a> ·
-        <a href="https://github.com/sql-js/sql.js" target="_blank">sql.js</a>
+        Data resmi KBBI · Source: <a id="kbbi" href="https://github.com/univzy/kbbi" target="_blank">kbbi.nim</a> ·
+        <a id="nim" href="https://nim-lang.org" target="_blank">nim-lang.org</a> ·
+        <a id="sql" href="https://github.com/sql-js/sql.js" target="_blank">sql.js</a>
       </div>
     </footer>
 
@@ -256,6 +256,28 @@
         console.warn('[App] Service Worker registration failed:', err);
       });
     }
+  </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const searchInput = document.getElementById('search-input');
+      const searchBtn = document.getElementById('search-btn');
+      
+      if (searchBtn && searchInput) {
+        searchBtn.addEventListener('click', function() {
+          if (searchInput.value.trim() === '') {
+            searchInput.classList.remove('glitch');
+            
+            void searchInput.offsetWidth; 
+            searchInput.classList.add('glitch');
+            
+            setTimeout(function() {
+              searchInput.classList.remove('glitch');
+            }, 400);
+          }
+        });
+      }
+    });
   </script>
 
 </body>

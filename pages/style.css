@@ -632,7 +632,7 @@ body {
   border: 1px solid rgba(255,0,110,0.2);
   padding: 0.05rem 0.35rem;
   background: var(--magenta-faint);
-  animation: textGlow 2.5s linear infinite;
+  animation: text-glow 2.5s linear infinite;
 }
 .cp-opt__tag--mag {
   color: rgba(255,32,121,0.8);
@@ -640,7 +640,7 @@ body {
   background: rgba(255,32,121,0.05);
 }
 
-@keyframes textGlow {
+@keyframes text-glow {
   0% {
     text-shadow: 0 0 0px var(--magenta);
   }

@@ -9,7 +9,11 @@ const
 proc parseEntriesAt(data: seq[byte], fromOff: int, toOff: int): seq[Entry] =
   if fromOff < 0 or fromOff > data.len:
     raise newException(ValueError, "Invalid description offset")
-  let endOff = if toOff > fromOff: min(toOff, data.len) else: data.len
+  let endOff =
+    if toOff > fromOff:
+      min(toOff, data.len)
+    else:
+      data.len
   let slice = data[fromOff ..< endOff]
   result = parse(slice)
 
@@ -61,23 +65,27 @@ proc main() =
 
   echo fmt"Creating {outPath}..."
   let db = open(outPath, "", "", "")
-  defer: db.close()
+  defer:
+    db.close()
 
   db.exec(sql"PRAGMA journal_mode = WAL")
   db.exec(sql"PRAGMA synchronous = NORMAL")
   db.exec(sql"PRAGMA cache_size = -64000")
   db.exec(sql"PRAGMA temp_store = MEMORY")
 
-  db.exec(sql"""
+  db.exec(
+    sql"""
     CREATE TABLE entries (
       id         INTEGER PRIMARY KEY,
       nilai      TEXT    NOT NULL,
       nilai_norm TEXT    NOT NULL,
       word       TEXT    NOT NULL,
       kind       TEXT    NOT NULL
-    )""")
+    )"""
+  )
 
-  db.exec(sql"""
+  db.exec(
+    sql"""
     CREATE TABLE senses (
       id         INTEGER PRIMARY KEY,
       entry_id   INTEGER NOT NULL,
@@ -97,26 +105,32 @@ proc main() =
       link       TEXT    NOT NULL,
       chem       TEXT    NOT NULL,
       FOREIGN KEY (entry_id) REFERENCES entries(id)
-    )""")
+    )"""
+  )
 
-  db.exec(sql"""
+  db.exec(
+    sql"""
     CREATE TABLE sense_examples (
       id       INTEGER PRIMARY KEY,
       sense_id INTEGER NOT NULL,
       example  TEXT    NOT NULL,
       FOREIGN KEY (sense_id) REFERENCES senses(id)
-    )""")
+    )"""
+  )
 
-  db.exec(sql"""
+  db.exec(
+    sql"""
     CREATE TABLE sense_xrefs (
       id       INTEGER PRIMARY KEY,
       sense_id INTEGER NOT NULL,
       xref_id  INTEGER NOT NULL,
       FOREIGN KEY (sense_id) REFERENCES senses(id),
       FOREIGN KEY (xref_id) REFERENCES entries(id)
-    )""")
+    )"""
+  )
 
-  db.exec(sql"""
+  db.exec(
+    sql"""
     CREATE TABLE sense_xref_groups (
       id       INTEGER PRIMARY KEY,
       sense_id INTEGER NOT NULL,
@@ -124,44 +138,56 @@ proc main() =
       ref_id   INTEGER NOT NULL,
       FOREIGN KEY (sense_id) REFERENCES senses(id),
       FOREIGN KEY (ref_id) REFERENCES entries(id)
-    )""")
+    )"""
+  )
 
-  db.exec(sql"""
+  db.exec(
+    sql"""
     CREATE TABLE kategori_bahasa (
       nilai TEXT NOT NULL PRIMARY KEY,
       desc  TEXT NOT NULL
-    )""")
+    )"""
+  )
 
-  db.exec(sql"""
+  db.exec(
+    sql"""
     CREATE TABLE kategori_bidang (
       nilai TEXT NOT NULL PRIMARY KEY,
       desc  TEXT NOT NULL
-    )""")
+    )"""
+  )
 
-  db.exec(sql"""
+  db.exec(
+    sql"""
     CREATE TABLE kategori_ragam (
       nilai TEXT NOT NULL PRIMARY KEY,
       desc  TEXT NOT NULL
-    )""")
+    )"""
+  )
 
-  db.exec(sql"""
+  db.exec(
+    sql"""
     CREATE TABLE kategori_kelas (
       nilai TEXT NOT NULL PRIMARY KEY,
       desc  TEXT NOT NULL
-    )""")
+    )"""
+  )
 
-  db.exec(sql"""
+  db.exec(
+    sql"""
     CREATE TABLE kategori_jenis (
       nilai TEXT NOT NULL PRIMARY KEY,
       desc  TEXT NOT NULL
-    )""")
+    )"""
+  )
 
   echo "Inserting kategori..."
   db.exec(sql"BEGIN")
   try:
     for jenis in ["bahasa", "bidang", "ragam", "kelas", "jenis"]:
       let path = dictDir / fmt"kat_index_{jenis}.txt"
-      if not fileExists(path): continue
+      if not fileExists(path):
+        continue
       let cats = parseKatIndex(cast[seq[byte]](readFile(path)))
       let tableName = "kategori_" & jenis
       for c in cats:
@@ -189,41 +215,78 @@ proc main() =
           0
 
       if ol.fileIdx notin descData:
-        raise newException(
-          ValueError,
-          fmt"Invalid fileIdx={ol.fileIdx} for entry id={id}")
+        raise
+          newException(ValueError, fmt"Invalid fileIdx={ol.fileIdx} for entry id={id}")
       let entries = parseEntriesAt(descData[ol.fileIdx], ol.offset, nextOff)
 
-      let word = if entries.len > 0: entries[0].word else: nilai
-      let kind = if entries.len > 1: "group"
-                 elif entries.len == 1: entries[0].kind
-                 else: "normal"
+      let word =
+        if entries.len > 0:
+          entries[0].word
+        else:
+          nilai
+      let kind =
+        if entries.len > 1:
+          "group"
+        elif entries.len == 1:
+          entries[0].kind
+        else:
+          "normal"
 
-      db.exec(sql"INSERT INTO entries (id, nilai, nilai_norm, word, kind) VALUES (?, ?, ?, ?, ?)",
-        id, nilai, fuzzyNorm(nilai), word, kind)
+      db.exec(
+        sql"INSERT INTO entries (id, nilai, nilai_norm, word, kind) VALUES (?, ?, ?, ?, ?)",
+        id,
+        nilai,
+        fuzzyNorm(nilai),
+        word,
+        kind,
+      )
 
       for entry in entries:
         for sense in entry.senses:
-          let senseId = db.insertID(sql"""
+          let senseId = db.insertID(
+            sql"""
             INSERT INTO senses (entry_id, entry_word, entry_kind, number, pos, bahasa, bidang, ragam, markers, text, altForm, altText, latin, abbrev, link, chem)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            id, entry.word, entry.kind,
-            sense.number, sense.pos, sense.bahasa, sense.bidang, sense.ragam,
-            sense.markers.join(","), sense.text, sense.altForm, sense.altText,
-            sense.latin, sense.abbrev, sense.link, sense.chem)
+            id,
+            entry.word,
+            entry.kind,
+            sense.number,
+            sense.pos,
+            sense.bahasa,
+            sense.bidang,
+            sense.ragam,
+            sense.markers.join(","),
+            sense.text,
+            sense.altForm,
+            sense.altText,
+            sense.latin,
+            sense.abbrev,
+            sense.link,
+            sense.chem,
+          )
 
           for example in sense.examples:
-            db.exec(sql"INSERT INTO sense_examples (sense_id, example) VALUES (?, ?)",
-              senseId, example)
+            db.exec(
+              sql"INSERT INTO sense_examples (sense_id, example) VALUES (?, ?)",
+              senseId,
+              example,
+            )
 
           for xref in sense.xrefs:
-            db.exec(sql"INSERT INTO sense_xrefs (sense_id, xref_id) VALUES (?, ?)",
-              senseId, xref)
+            db.exec(
+              sql"INSERT INTO sense_xrefs (sense_id, xref_id) VALUES (?, ?)",
+              senseId,
+              xref,
+            )
 
           for group in sense.xrefGroups:
             for refId in group.refs:
-              db.exec(sql"INSERT INTO sense_xref_groups (sense_id, kind, ref_id) VALUES (?, ?, ?)",
-                senseId, group.kind, refId)
+              db.exec(
+                sql"INSERT INTO sense_xref_groups (sense_id, kind, ref_id) VALUES (?, ?, ?)",
+                senseId,
+                group.kind,
+                refId,
+              )
 
       inc done
       if done mod batchCommitSize == 0:
@@ -251,13 +314,16 @@ proc main() =
   db.exec(sql"CREATE INDEX idx_xref_groups_sense_id ON sense_xref_groups(sense_id)")
 
   echo "Building FTS5 index..."
-  db.exec(sql"""
+  db.exec(
+    sql"""
     CREATE VIRTUAL TABLE entries_fts USING fts5(
       word, text,
       content = entries,
       content_rowid = id
-    )""")
-  db.exec(sql"""
+    )"""
+  )
+  db.exec(
+    sql"""
     INSERT INTO entries_fts(rowid, word, text)
     SELECT
       e.id,
@@ -273,27 +339,36 @@ proc main() =
         ' '))
     FROM entries e
     LEFT JOIN senses s ON e.id = s.entry_id
-    GROUP BY e.id""")
+    GROUP BY e.id"""
+  )
 
   echo "Building kategori_counts..."
-  db.exec(sql"""
+  db.exec(
+    sql"""
     CREATE TABLE kategori_counts (
       jenis TEXT NOT NULL,
       nilai TEXT NOT NULL,
       cnt   INTEGER NOT NULL,
       PRIMARY KEY (jenis, nilai)
-    )""")
-  for jenis in [("bahasa", "bahasa"), ("bidang", "bidang"),
-                ("ragam",  "ragam"),  ("kelas",  "pos"),
-                ("jenis",  "markers")]:
+    )"""
+  )
+  for jenis in [
+    ("bahasa", "bahasa"),
+    ("bidang", "bidang"),
+    ("ragam", "ragam"),
+    ("kelas", "pos"),
+    ("jenis", "markers"),
+  ]:
     let (jenisName, col) = jenis
-    db.exec(sql(
-      "INSERT INTO kategori_counts (jenis, nilai, cnt) " &
-      "SELECT '" & jenisName & "', k.nilai, COUNT(DISTINCT e.id) " &
-      "FROM kategori_" & jenisName & " k " &
-      "LEFT JOIN senses s ON (',' || s." & col & " || ',') LIKE '%,' || k.nilai || ',%' " &
-      "LEFT JOIN entries e ON s.entry_id = e.id " &
-      "GROUP BY k.nilai"))
+    db.exec(
+      sql(
+        "INSERT INTO kategori_counts (jenis, nilai, cnt) " & "SELECT '" & jenisName &
+          "', k.nilai, COUNT(DISTINCT e.id) " & "FROM kategori_" & jenisName & " k " &
+          "LEFT JOIN senses s ON (',' || s." & col &
+          " || ',') LIKE '%,' || k.nilai || ',%' " &
+          "LEFT JOIN entries e ON s.entry_id = e.id " & "GROUP BY k.nilai"
+      )
+    )
     echo fmt"  {jenisName}: done"
 
   db.exec(sql"PRAGMA optimize")

@@ -1,7 +1,6 @@
-type
-  LRUCache* = object
-    entries*: seq[(cstring, cstring)]
-    maxSize*: int
+type LRUCache* = object
+  entries*: seq[(cstring, cstring)]
+  maxSize*: int
 
 proc newLRUCache*(maxSize: int): LRUCache =
   LRUCache(entries: @[], maxSize: maxSize)

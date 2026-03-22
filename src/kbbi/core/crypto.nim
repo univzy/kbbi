@@ -4,10 +4,8 @@ import pkg/[zippy]
 type Salsa20 = array[16, uint32]
 
 const key: array[32, byte] = block:
-  const keyHex = "ffef8a8d11f535b73cd24fd31e" &
-    "f296d0573ade68b1" &
-    "f079cbdea460149e" &
-    "d4036e"
+  const keyHex =
+    "ffef8a8d11f535b73cd24fd31e" & "f296d0573ade68b1" & "f079cbdea460149e" & "d4036e"
   var a: array[32, byte]
   for i in 0 ..< 32:
     a[i] = byte(parseHexInt(keyHex[i * 2 ..< i * 2 + 2]))
@@ -26,7 +24,7 @@ const sigma: array[16, byte] = block:
     a[i] = byte(c)
   a
 
-proc `<<<` (x: uint32, y: SomeInteger): uint32 {.inline.} =
+proc `<<<`(x: uint32, y: SomeInteger): uint32 {.inline.} =
   (x shl y) or (x shr (32 - y))
 
 proc quarterRound(a, b, c, d: var uint32) {.inline.} =
@@ -36,35 +34,36 @@ proc quarterRound(a, b, c, d: var uint32) {.inline.} =
   a = a xor ((d + c) <<< 18)
 
 proc rowRound(x: var Salsa20) {.inline.} =
-  quarterRound(x[ 0], x[ 1], x[ 2], x[ 3])
-  quarterRound(x[ 5], x[ 6], x[ 7], x[ 4])
-  quarterRound(x[10], x[11], x[ 8], x[ 9])
+  quarterRound(x[0], x[1], x[2], x[3])
+  quarterRound(x[5], x[6], x[7], x[4])
+  quarterRound(x[10], x[11], x[8], x[9])
   quarterRound(x[15], x[12], x[13], x[14])
 
 proc columnRound(x: var Salsa20) {.inline.} =
-  quarterRound(x[ 0], x[ 4], x[ 8], x[12])
-  quarterRound(x[ 5], x[ 9], x[13], x[ 1])
-  quarterRound(x[10], x[14], x[ 2], x[ 6])
-  quarterRound(x[15], x[ 3], x[ 7], x[11])
+  quarterRound(x[0], x[4], x[8], x[12])
+  quarterRound(x[5], x[9], x[13], x[1])
+  quarterRound(x[10], x[14], x[2], x[6])
+  quarterRound(x[15], x[3], x[7], x[11])
 
 proc salsaHash(x: Salsa20): Salsa20 =
   var y: Salsa20 = x
-  for i in 1..10:
+  for i in 1 .. 10:
     columnRound(y)
     rowRound(y)
-  for i in 0..<16:
+  for i in 0 ..< 16:
     y[i] += x[i]
   result = y
 
 func leLoad32(b: openArray[byte], i: int): uint32 {.inline.} =
-  uint32(b[i]) or (uint32(b[i + 1]) shl 8) or
-  (uint32(b[i + 2]) shl 16) or (uint32(b[i + 3]) shl 24)
+  uint32(b[i]) or (uint32(b[i + 1]) shl 8) or (uint32(b[i + 2]) shl 16) or
+    (uint32(b[i + 3]) shl 24)
 
 proc decryptFile*(path: string): seq[byte] =
   let enc = cast[seq[byte]](readFile(path))
 
   if enc.len > 0x10000000000000:
-    raise newException(ValueError, "File too large for Salsa20 decryption (max 2^70 bytes)")
+    raise
+      newException(ValueError, "File too large for Salsa20 decryption (max 2^70 bytes)")
 
   var state: Salsa20
   state[0] = leLoad32(sigma, 0)

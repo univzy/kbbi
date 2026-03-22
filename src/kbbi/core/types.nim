@@ -36,8 +36,7 @@ type
     nilai*: string
     desc*: string
 
-proc newSense*(
-    number = "", pos = "", bahasa = "", bidang = "", ragam = ""): Sense =
+proc newSense*(number = "", pos = "", bahasa = "", bidang = "", ragam = ""): Sense =
   let s = new(Sense)
   s.number = number
   s.pos = pos

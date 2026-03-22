@@ -2,10 +2,9 @@ import std/[json, strutils]
 import ./[common, types, varint]
 
 func isBlank(s: Sense): bool =
-  s.text.len == 0 and s.altForm.len == 0 and s.altText.len == 0 and
-  s.latin.len == 0 and s.abbrev.len == 0 and s.link.len == 0 and
-  s.chem.len == 0 and s.examples.len == 0 and s.markers.len == 0 and
-  s.xrefGroups.len == 0
+  s.text.len == 0 and s.altForm.len == 0 and s.altText.len == 0 and s.latin.len == 0 and
+    s.abbrev.len == 0 and s.link.len == 0 and s.chem.len == 0 and s.examples.len == 0 and
+    s.markers.len == 0 and s.xrefGroups.len == 0
 
 proc senseToJson*(s: Sense): JsonNode =
   result = newJObject()
@@ -83,11 +82,11 @@ proc sensesToJson*(entries: seq[Entry]): string =
 proc parse*(data: seq[byte]): seq[Entry] =
   var entries: seq[Entry] = @[]
   var s = newVStream(data)
-  var cur     = newEntry()
-  var hasCur  = false
-  var sense   = newSense()
+  var cur = newEntry()
+  var hasCur = false
+  var sense = newSense()
   var xrefKind = ""
-  var chemBuf  = ""
+  var chemBuf = ""
   proc flushChem() =
     if chemBuf.len > 0:
       if sense.chem.len > 0:
@@ -95,6 +94,7 @@ proc parse*(data: seq[byte]): seq[Entry] =
       else:
         sense.chem = chemBuf
       chemBuf = ""
+
   proc flushSense() =
     flushChem()
     if not sense.isBlank or sense.xrefs.len > 0:
@@ -105,6 +105,7 @@ proc parse*(data: seq[byte]): seq[Entry] =
         cur.senses.add(sense)
     sense = newSense()
     xrefKind = ""
+
   proc flushEntry() =
     if hasCur:
       flushSense()
@@ -118,9 +119,11 @@ proc parse*(data: seq[byte]): seq[Entry] =
     sense = newSense()
     xrefKind = ""
     chemBuf = ""
+
   while not s.atEnd():
     let b = s.readByte()
-    if b < 0: break
+    if b < 0:
+      break
     let code = b
     let argType = CODE_ARG[code]
 
@@ -132,7 +135,8 @@ proc parse*(data: seq[byte]): seq[Entry] =
       discard
     of 2:
       argNum = s.readVarint()
-      if argNum < 0: break
+      if argNum < 0:
+        break
     of 3:
       argStr = s.readString()
     else:
@@ -165,10 +169,14 @@ proc parse*(data: seq[byte]): seq[Entry] =
         sense.number = t[0 .. ^2]
       elif t notin ["\n", " ", ": ", "; ", ""]:
         var clean = t
-        if clean.startsWith("bentuk tidak baku: "): clean = clean[19..^1]
-        elif clean.startsWith("bentuk tidak baku dari "): clean = clean[23..^1]
-        elif clean == "bentuk tidak baku dari": clean = ""
-        if clean.len > 0: sense.text.add(clean)
+        if clean.startsWith("bentuk tidak baku: "):
+          clean = clean[19 ..^ 1]
+        elif clean.startsWith("bentuk tidak baku dari "):
+          clean = clean[23 ..^ 1]
+        elif clean == "bentuk tidak baku dari":
+          clean = ""
+        if clean.len > 0:
+          sense.text.add(clean)
     of 20:
       sense.pos = argStr
     of 21:
@@ -206,9 +214,7 @@ proc parse*(data: seq[byte]): seq[Entry] =
             found = true
             break
         if not found:
-          sense.xrefGroups.add(
-            newXrefGroup(xrefKind, @[argNum])
-          )
+          sense.xrefGroups.add(newXrefGroup(xrefKind, @[argNum]))
       else:
         sense.xrefs.add(argNum)
     of 41:

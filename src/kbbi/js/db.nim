@@ -1,7 +1,8 @@
 import std/jsffi
 import ./[cache, config, ffi]
 
-const dbLoadingError* = "<div class=\"error\"><div class=\"err-icon\">⏳</div><p>Database belum selesai dimuat.</p></div>"
+const dbLoadingError* =
+  "<div class=\"error\"><div class=\"err-icon\">⏳</div><p>Database belum selesai dimuat.</p></div>"
 
 var sqlDb*: JsObject = nil
 var dbLoadError*: cstring = ""
@@ -15,33 +16,49 @@ proc initKategoriMap*(): JsObject =
   return m
 
 proc loadKategoriTable*(table: cstring, jenis: cstring, map: var JsObject) =
-  {.emit: ["""
+  {.
+    emit: [
+      """
     try {
-      var rows = """, sqlDb, """.exec('SELECT nilai, desc FROM ' + """, table, """);
+      var rows = """, sqlDb,
+      """.exec('SELECT nilai, desc FROM ' + """, table,
+      """);
       if (rows && rows.length > 0) {
         rows[0].values.forEach(function(r){
-          """, map, """[""", jenis, """ + ':' + r[0]] = r[1];
+          """,
+      map, """[""", jenis,
+      """ + ':' + r[0]] = r[1];
         });
       }
-    } catch(e) { console.warn('kategori load failed for ' + """, table, """, e); }
-  """].}
+    } catch(e) { console.warn('kategori load failed for ' + """,
+      table,
+      """, e); }
+  """,
+    ]
+  .}
 
 proc initWordCache*() =
   wordCache = newLRUCache(maxWordCacheSize)
 
 proc katGetSafe*(jenis, nilai: cstring, map: JsObject): cstring =
-  if map.isNil: return nilai
+  if map.isNil:
+    return nilai
   var desc: cstring = ""
   let key = jenis & ":" & nilai
-  {.emit: [desc, " = ", map, "[", key, "];", 
-           "if (", desc, " !== undefined) { ", desc, " = String(", desc, "); } else { ", desc, " = ''; }"].}
+  {.
+    emit: [
+      desc, " = ", map, "[", key, "];", "if (", desc, " !== undefined) { ", desc,
+      " = String(", desc, "); } else { ", desc, " = ''; }",
+    ]
+  .}
   return if desc == "": nilai else: desc
 
 proc katGet*(jenis, nilai: cstring): cstring =
   katGetSafe(jenis, nilai, kategoriMap)
 
 proc loadKategori*() =
-  if sqlDb.isNil: return
+  if sqlDb.isNil:
+    return
   kategoriMap = initKategoriMap()
   loadKategoriTable("kategori_bahasa", "bahasa", kategoriMap)
   loadKategoriTable("kategori_bidang", "bidang", kategoriMap)
@@ -60,67 +77,94 @@ proc dbQuery2*(sql: cstring, p1, p2: cstring): JsObject =
   return arr
 
 proc getResultRows*(res: JsObject): seq[seq[cstring]] =
-  if res.isNil or jsLength(res) == 0: return @[]
+  if res.isNil or jsLength(res) == 0:
+    return @[]
   let block0 = jsItem(res, 0)
-  let vals   = jsGet(block0, "values")
-  if vals.isNil: return @[]
+  let vals = jsGet(block0, "values")
+  if vals.isNil:
+    return @[]
   let numRows = jsLength(vals)
-  for i in 0..<numRows:
+  for i in 0 ..< numRows:
     let row = jsItem(vals, i)
     var r: seq[cstring] = @[]
     var rowLen: int
     {.emit: [rowLen, " = (", row, "||[]).length;"].}
-    for j in 0..<rowLen:
+    for j in 0 ..< rowLen:
       var cell: JsObject
       {.emit: [cell, " = ", row, "[", j, "];"].}
       r.add(jsStr(cell))
     result.add(r)
 
 proc lookupWordById*(id: int): cstring =
-  if sqlDb.isNil: return ""
+  if sqlDb.isNil:
+    return ""
   let idStr = cstring($id)
   let cached = lruGet(wordCache, idStr)
-  if cached != "": return cached
+  if cached != "":
+    return cached
   var word: cstring = ""
-  {.emit: ["""try {
-    var _r=""", sqlDb, """.exec("SELECT word FROM entries WHERE id=?",[""", idStr, """]);
-    if(_r.length>0&&_r[0].values.length>0) """, word, """=String(_r[0].values[0][0]||'');
-  } catch(e) {}"""].}
+  {.
+    emit: [
+      """try {
+    var _r=""", sqlDb,
+      """.exec("SELECT word FROM entries WHERE id=?",[""", idStr,
+      """]);
+    if(_r.length>0&&_r[0].values.length>0) """, word,
+      """=String(_r[0].values[0][0]||'');
+  } catch(e) {}""",
+    ]
+  .}
   if word != "":
     lruSet(wordCache, idStr, word)
   return word
 
 proc fetchEntrySyllable*(sensesJson: cstring): cstring =
   result = ""
-  {.emit: ["""try {
-    var _n = JSON.parse(""", sensesJson, """);
+  {.
+    emit: [
+      """try {
+    var _n = JSON.parse(""", sensesJson,
+      """);
     var _arr = Array.isArray(_n) ? _n : (_n && _n.variants ? _n.variants[0].senses : []);
     for (var _i=0; _i<_arr.length; _i++) {
-      if (_arr[_i].alt_form) { """, result, """ = _arr[_i].alt_form; break; }
+      if (_arr[_i].alt_form) { """,
+      result,
+      """ = _arr[_i].alt_form; break; }
     }
-  } catch(e) {}"""].}
+  } catch(e) {}""",
+    ]
+  .}
   return result
 
 proc fetchEntrySenses*(entryId: cstring, word: cstring, kind: cstring): cstring =
   result = "[]"
-  {.emit: ["""
+  {.
+    emit: [
+      """
   try {
-    var entryId = """, entryId, """;
-    var isGroup = (""", kind, """ === 'group');
+    var entryId = """, entryId,
+      """;
+    var isGroup = (""", kind,
+      """ === 'group');
 
-    var sRows = """, sqlDb, """.exec(
+    var sRows = """, sqlDb,
+      """.exec(
       'SELECT id,entry_word,entry_kind,' +
       'number,pos,bahasa,bidang,ragam,markers,text,' +
       'altForm,altText,latin,abbrev,link,chem ' +
       'FROM senses WHERE entry_id=? ORDER BY id', [entryId]);
-    if (!sRows.length || !sRows[0].values.length) { """, result, """ = '[]'; return; }
+    if (!sRows.length || !sRows[0].values.length) { """,
+      result,
+      """ = '[]'; return; }
 
     var senseRows = sRows[0].values;
     var senseIds = senseRows.map(function(r){ return r[0]; });
 
     var exMap = {};
     if (senseIds.length > 0) {
-      var exRows = """, sqlDb, """.exec(
+      var exRows = """,
+      sqlDb,
+      """.exec(
         'SELECT sense_id, example FROM sense_examples WHERE sense_id IN (' +
         senseIds.join(',') + ') ORDER BY id');
       if (exRows.length && exRows[0].values.length) {
@@ -133,7 +177,9 @@ proc fetchEntrySenses*(entryId: cstring, word: cstring, kind: cstring): cstring 
 
     var xrMap = {};
     if (senseIds.length > 0) {
-      var xrRows = """, sqlDb, """.exec(
+      var xrRows = """,
+      sqlDb,
+      """.exec(
         'SELECT sense_id, xref_id FROM sense_xrefs WHERE sense_id IN (' +
         senseIds.join(',') + ')');
       if (xrRows.length && xrRows[0].values.length) {
@@ -146,7 +192,9 @@ proc fetchEntrySenses*(entryId: cstring, word: cstring, kind: cstring): cstring 
 
     var xgMap = {};
     if (senseIds.length > 0) {
-      var xgRows = """, sqlDb, """.exec(
+      var xgRows = """,
+      sqlDb,
+      """.exec(
         'SELECT sense_id, kind, ref_id FROM sense_xref_groups WHERE sense_id IN (' +
         senseIds.join(',') + ') ORDER BY id');
       if (xgRows.length && xgRows[0].values.length) {
@@ -184,7 +232,9 @@ proc fetchEntrySenses*(entryId: cstring, word: cstring, kind: cstring): cstring 
     }
 
     if (!isGroup) {
-      """, result, """ = JSON.stringify(senseRows.map(buildSenseObj));
+      """,
+      result,
+      """ = JSON.stringify(senseRows.map(buildSenseObj));
     } else {
       var variantOrder = [];
       var variantMap = {};
@@ -197,11 +247,15 @@ proc fetchEntrySenses*(entryId: cstring, word: cstring, kind: cstring): cstring 
         }
         variantMap[key].senses.push(buildSenseObj(r));
       });
-      """, result, """ = JSON.stringify({
+      """,
+      result,
+      """ = JSON.stringify({
         group: true,
         variants: variantOrder.map(function(k){ return variantMap[k]; })
       });
     }
   } catch(e) { console.warn('fetchEntrySenses failed', e); }
-  """].}
+  """,
+    ]
+  .}
   return result

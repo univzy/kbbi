@@ -242,8 +242,7 @@ proc main() =
       )
 
       for entry in entries:
-        # Persist redirect xrefs stored in entry.see (redirect entries have no senses)
-        if entry.see.len > 0:
+        if entry.see.len > 0 and entry.senses.len == 0:
           let senseId = db.insertID(
             sql"""INSERT INTO senses (entry_id, entry_word, entry_kind, number, pos,
                   bahasa, bidang, ragam, markers, text, altForm, altText, latin,

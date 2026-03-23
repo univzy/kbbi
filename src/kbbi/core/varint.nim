@@ -76,7 +76,10 @@ func readRawString*(s: var VStream, length: int): string =
   let endPos = s.pos + length
   if endPos > s.data.len:
     return ""
-  result = cast[string](s.data[s.pos ..< endPos])
+  result = newString(length)
+  for j in 0 ..< length:
+    result[j] = char(s.data[s.pos + j])
+
   s.pos = endPos
 
 func readString*(s: var VStream): string =

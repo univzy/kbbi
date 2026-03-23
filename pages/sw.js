@@ -1,5 +1,8 @@
 const CACHE_VERSION = '1.0.1';
 const SHELL_CACHE = `kbbi-shell-v${CACHE_VERSION}`;
+const DB_CACHE = `kbbi_cache_vi_${CACHE_VERSION}`;
+
+const KNOWN_CACHES = new Set([SHELL_CACHE, DB_CACHE]);
 
 const SHELL_ASSETS = [
   './index.html',
@@ -28,8 +31,11 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) =>
       Promise.all(
         cacheNames
-          .filter(name => name !== SHELL_CACHE && !name.startsWith('kbbi_cache'))
-          .map(name => caches.delete(name))
+          .filter(name => !KNOWN_CACHES.has(name))
+          .map(name => {
+            console.log('[SW] Deleting old cache:', name);
+            return caches.delete(name);
+          })
       )
     ).then(() => self.clients.claim())
   );

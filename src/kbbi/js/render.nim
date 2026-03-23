@@ -1,16 +1,20 @@
 import std/[jsffi, strutils]
+import karax/[kbase, jjson]
 import ./[ffi, db, utils]
 
-proc badgeWithTooltip*(cls, code, jenis: cstring): cstring =
+proc safeStr(node: JsonNode): kstring {.importcpp: "String(#||'')".}
+proc safeInt(node: JsonNode): int {.importcpp: "(#|0)".}
+
+proc badgeWithTooltip*(cls, code, jenis: kstring): kstring =
   let desc = katGet(jenis, code)
-  let title: cstring =
+  let title: kstring =
     if desc != code:
       " title=\"" & htmlEsc(desc) & "\""
     else:
       ""
   return "<span class=\"badge " & cls & "\"" & title & ">" & htmlEsc(code) & "</span>"
 
-proc kindBadgeHtml*(kind: cstring): cstring =
+proc kindBadgeHtml*(kind: kstring): kstring =
   case $kind
   of "foreign":
     return
@@ -31,7 +35,7 @@ proc kindBadgeHtml*(kind: cstring): cstring =
   else:
     return ""
 
-proc markerBadge*(m: cstring): cstring =
+proc markerBadge*(m: kstring): kstring =
   case $m
   of "ki":
     return "<span class=\"badge marker\" title=\"Kiasan (figuratif/idiom)\">ki</span>"
@@ -44,18 +48,18 @@ proc markerBadge*(m: cstring): cstring =
   else:
     return "<span class=\"badge marker\">" & htmlEsc(m) & "</span>"
 
-proc renderMarkerBadges*(m: cstring): cstring =
+proc renderMarkerBadges*(m: kstring): kstring =
   if not isValidString(m):
     return ""
-  var badges: cstring = ""
+  var badges: kstring = ""
   let ms = ($m).split(",")
   for mk in ms:
     let mkc = mk.strip()
     if mkc != "":
-      badges = badges & markerBadge(cstring(mkc))
+      badges = badges & markerBadge(kstring(mkc))
   return badges
 
-proc xrefGroupLabel*(kind: cstring): cstring =
+proc xrefGroupLabel*(kind: kstring): kstring =
   case $kind
   of "baku":
     return "<span class=\"xref-kind baku\" title=\"Bentuk baku\">bentuk baku</span>"
@@ -75,47 +79,40 @@ proc xrefGroupLabel*(kind: cstring): cstring =
     return
       "<span class=\"xref-kind tidak-baku\" title=\"Bentuk tidak baku\">bentuk tidak baku</span>"
 
-proc buildXrefLinks*(xrArr: JsObject): seq[cstring] =
-  var links: seq[cstring] = @[]
-  if xrArr.isNil or jsLength(xrArr) == 0:
+proc buildXrefLinks*(xrArr: JsonNode): seq[kstring] =
+  var links: seq[kstring] = @[]
+  if xrArr.isNil or xrArr.len == 0:
     return links
-  for i in 0 ..< jsLength(xrArr):
-    let id = jsInt(jsItem(xrArr, i))
+  for item in xrArr:
+    let id = safeInt(item)
     if id == 0:
       continue
     let w = lookupWordById(id)
     if isValidString(w):
-      links.add(buildDataButton(w, "search-id", cstring($id), w))
+      links.add(buildDataButton(w, "search-id", kstring($id), w))
     else:
-      links.add("<span class=\"xref-id\">#" & cstring($id) & "</span>")
+      links.add("<span class=\"xref-id\">#" & kstring($id) & "</span>")
   return links
 
-proc renderXrefs*(xrArr: JsObject): cstring =
+proc renderXrefsWithLabel*(xrArr: JsonNode, label: kstring): kstring =
   let links = buildXrefLinks(xrArr)
   if links.len == 0:
     return ""
-  var html: cstring = "<div class=\"xrefs plain\">"
+  var html: kstring = "<div class=\"xref-group\">" & xrefGroupLabel(label)
   for lk in links:
     html = html & lk
   return html & "</div>"
 
-proc renderXrefsWithLabel*(xrArr: JsObject, label: cstring): cstring =
-  let links = buildXrefLinks(xrArr)
-  if links.len == 0:
-    return ""
-  var html: cstring = "<div class=\"xref-group\">" & xrefGroupLabel(label)
-  for lk in links:
-    html = html & lk
-  return html & "</div>"
+proc renderXrefs*(xrArr: JsonNode): kstring =
+  return renderXrefsWithLabel(xrArr, "lihat")
 
-proc renderXrefGroups*(xgArr: JsObject): cstring =
-  if xgArr.isNil or jsLength(xgArr) == 0:
+proc renderXrefGroups*(xgArr: JsonNode): kstring =
+  if xgArr.isNil or xgArr.len == 0:
     return ""
-  var html: cstring = ""
-  for i in 0 ..< jsLength(xgArr):
-    let grp = jsItem(xgArr, i)
-    let kind = jsStr(jsGet(grp, "kind"))
-    let refs = jsGet(grp, "refs")
+  var html: kstring = ""
+  for grp in xgArr:
+    let kind = safeStr(grp["kind"])
+    let refs = grp["refs"]
     let links = buildXrefLinks(refs)
     if links.len == 0:
       continue
@@ -126,33 +123,33 @@ proc renderXrefGroups*(xgArr: JsObject): cstring =
   return html
 
 proc renderSense*(
-    s: JsObject, headword: cstring, suppressXrefGroups = false, xrefsLabel: cstring = ""
-): cstring =
-  let num = jsStr(jsGet(s, "number"))
-  let p = jsStr(jsGet(s, "pos"))
-  let bh = jsStr(jsGet(s, "bahasa"))
-  let bd = jsStr(jsGet(s, "bidang"))
-  let r = jsStr(jsGet(s, "ragam"))
-  let m = jsStr(jsGet(s, "markers"))
-  let t = jsStr(jsGet(s, "text"))
-  let at = jsStr(jsGet(s, "alt_text"))
-  let l = jsStr(jsGet(s, "latin"))
-  let ab = jsStr(jsGet(s, "abbrev"))
-  let lk = jsStr(jsGet(s, "link"))
-  let ch = jsStr(jsGet(s, "chem"))
+    s: JsonNode, headword: kstring, suppressXrefGroups = false, xrefsLabel: kstring = ""
+): kstring =
+  let num = safeStr(s["number"])
+  let p = safeStr(s["pos"])
+  let bh = safeStr(s["bahasa"])
+  let bd = safeStr(s["bidang"])
+  let r = safeStr(s["ragam"])
+  let m = safeStr(s["markers"])
+  let t = safeStr(s["text"])
+  let at = safeStr(s["alt_text"])
+  let l = safeStr(s["latin"])
+  let ab = safeStr(s["abbrev"])
+  let lk = safeStr(s["link"])
+  let ch = safeStr(s["chem"])
 
-  var numHtml: cstring = ""
+  var numHtml: kstring = ""
   if isValidString(num):
     numHtml = "<span class=\"sense-num\">" & htmlEsc(num) & "</span>"
 
-  var badges: cstring = ""
+  var badges: kstring = ""
   if isValidString(p):
     badges = badges & badgeWithTooltip("kelas", p, "kelas")
   if isValidString(bh):
     badges = badges & badgeWithTooltip("bahasa", bh, "bahasa")
   if isValidString(bd):
     let bdDesc = katGet("bidang", bd)
-    let bdTitle: cstring =
+    let bdTitle: kstring =
       if bdDesc != bd:
         " title=\"" & htmlEsc(bdDesc) & "\""
       else:
@@ -163,15 +160,13 @@ proc renderSense*(
     badges = badges & badgeWithTooltip("ragam", r, "ragam")
   badges = badges & renderMarkerBadges(m)
 
-  var body: cstring = ""
+  var body: kstring = ""
   if isValidString(t):
-    let esc_t = htmlEsc(t)
-    body = body & "<span class=\"def-text\">" & esc_t & "</span>"
+    body = body & "<span class=\"def-text\">" & htmlEsc(t) & "</span>"
   if isValidString(ab):
-    let esc_ab = htmlEsc(ab)
     body =
-      body & " <span class=\"def-abbrev\" title=\"Kepanjangan singkatan\">(" & esc_ab &
-      ")</span>"
+      body & " <span class=\"def-abbrev\" title=\"Kepanjangan singkatan\">(" &
+      htmlEsc(ab) & ")</span>"
   if isValidString(at):
     body =
       body & " <span class=\"def-note\">lihat: " & buildDataButton(at, "search", at, at) &
@@ -181,46 +176,42 @@ proc renderSense*(
       body & " <span class=\"def-note\">= " & buildDataButton(lk, "search", lk, lk) &
       "</span>"
   if isValidString(l):
-    let esc_l = htmlEsc(l)
-    body = body & " <span class=\"def-latin\"><em>" & esc_l & "</em></span>"
+    body = body & " <span class=\"def-latin\"><em>" & htmlEsc(l) & "</em></span>"
   if isValidString(ch):
-    let esc_ch = htmlEsc(ch)
-    body = body & " <span class=\"def-chem\">" & esc_ch & "</span>"
+    body = body & " <span class=\"def-chem\">" & htmlEsc(ch) & "</span>"
 
-  var exHtml: cstring = ""
-  let exArr = jsGet(s, "examples")
-  if not exArr.isNil and jsLength(exArr) > 0:
+  var exHtml: kstring = ""
+  let exArr = s["examples"]
+  if not exArr.isNil and exArr.len > 0:
     exHtml = "<ul class=\"examples\" role=\"list\">"
-    for i in 0 ..< jsLength(exArr):
-      let raw = jsStr(jsItem(exArr, i))
-      let ex = replaceHeadword(raw, headword)
-      exHtml = exHtml & "<li role=\"listitem\">" & htmlEsc(ex) & "</li>"
+    for ex in exArr:
+      let raw = safeStr(ex)
+      exHtml =
+        exHtml & "<li role=\"listitem\">" & htmlEsc(replaceHeadword(raw, headword)) &
+        "</li>"
     exHtml = exHtml & "</ul>"
 
-  let xrefs = jsGet(s, "xrefs")
   let xrHtml =
     if xrefsLabel != "":
-      renderXrefsWithLabel(xrefs, xrefsLabel)
+      renderXrefsWithLabel(s["xrefs"], xrefsLabel)
     else:
-      renderXrefs(xrefs)
-  let xgHtml: cstring =
+      renderXrefs(s["xrefs"])
+  let xgHtml: kstring =
     if suppressXrefGroups:
       ""
     else:
-      renderXrefGroups(jsGet(s, "xref_groups"))
+      renderXrefGroups(s["xref_groups"])
 
   return
     "<li class=\"sense-item\">" & numHtml & "<div class=\"sense-right\">" &
     "<div class=\"sense-meta\">" & badges & "</div>" & "<div class=\"sense-body\">" &
-    body & exHtml & xrHtml & xgHtml & "</div>" & "</div>" & "</li>"
+    body & exHtml & xrHtml & xgHtml & "</div>" & "</div></li>"
 
-proc renderRedirectCard*(word, kind, entryId: cstring): cstring =
-  var targets: cstring = ""
+proc renderRedirectCard*(word, kind, entryId: kstring): kstring =
+  var targets: kstring = ""
   let atRows = getResultRows(
     dbQuery(
-      """
-    SELECT altText FROM senses WHERE entry_id=? AND altText != '' LIMIT 1""",
-      entryId,
+      "SELECT altText FROM senses WHERE entry_id=? AND altText != '' LIMIT 1", entryId
     )
   )
   if atRows.len > 0 and atRows[0].len > 0 and isValidString(atRows[0][0]):
@@ -232,15 +223,12 @@ proc renderRedirectCard*(word, kind, entryId: cstring): cstring =
   else:
     let xrRows = getResultRows(
       dbQuery(
-        """
-      SELECT sx.xref_id FROM senses s
-      JOIN sense_xrefs sx ON sx.sense_id = s.id
-      WHERE s.entry_id=? LIMIT 5""",
+        "SELECT sx.xref_id FROM senses s JOIN sense_xrefs sx ON sx.sense_id = s.id WHERE s.entry_id=? LIMIT 5",
         entryId,
       )
     )
     if xrRows.len > 0:
-      var links: cstring = ""
+      var links: kstring = ""
       for row in xrRows:
         if row.len == 0:
           continue
@@ -249,19 +237,16 @@ proc renderRedirectCard*(word, kind, entryId: cstring): cstring =
         if isValidString(w):
           links = links & buildDataButton(w, "search-id", id, w)
       if links != "":
-        targets = links
+        targets = "<div class=\"xref-plain\">" & links & "</div>"
     if targets == "":
       let xgRows = getResultRows(
         dbQuery(
-          """
-        SELECT sxg.ref_id FROM senses s
-        JOIN sense_xref_groups sxg ON sxg.sense_id = s.id
-        WHERE s.entry_id=? AND sxg.kind='baku' LIMIT 5""",
+          "SELECT sxg.ref_id FROM senses s JOIN sense_xref_groups sxg ON sxg.sense_id = s.id WHERE s.entry_id=? AND sxg.kind='baku' LIMIT 5",
           entryId,
         )
       )
       if xgRows.len > 0:
-        var links: cstring = ""
+        var links: kstring = ""
         for row in xgRows:
           if row.len == 0:
             continue
@@ -270,20 +255,16 @@ proc renderRedirectCard*(word, kind, entryId: cstring): cstring =
           if isValidString(w):
             links = links & buildDataButton(w, "search-id", id, w)
         if links != "":
-          targets = links
+          targets = "<div class=\"xref-group\">" & links & "</div>"
     if targets == "":
       let revRows = getResultRows(
         dbQuery(
-          """
-        SELECT DISTINCT e.id, e.word FROM sense_xref_groups sxg
-        JOIN senses s ON s.id = sxg.sense_id
-        JOIN entries e ON e.id = s.entry_id
-        WHERE sxg.ref_id=? AND sxg.kind='baku' LIMIT 5""",
+          "SELECT DISTINCT e.id, e.word FROM sense_xref_groups sxg JOIN senses s ON s.id = sxg.sense_id JOIN entries e ON e.id = s.entry_id WHERE sxg.ref_id=? AND sxg.kind='baku' LIMIT 5",
           entryId,
         )
       )
       if revRows.len > 0:
-        var links: cstring = ""
+        var links: kstring = ""
         for row in revRows:
           if row.len < 2:
             continue
@@ -292,9 +273,9 @@ proc renderRedirectCard*(word, kind, entryId: cstring): cstring =
           if isValidString(w):
             links = links & buildDataButton(w, "search-id", id, w)
         if links != "":
-          targets = links
+          targets = "<div class=\"xref-plain\">" & links & "</div>"
 
-  let lbl: cstring =
+  let lbl: kstring =
     case $kind
     of "alias": "merupakan alias dari"
     of "redirect": "merujuk ke"
@@ -305,77 +286,69 @@ proc renderRedirectCard*(word, kind, entryId: cstring): cstring =
     "</span>" & "<span class=\"redirect-label\"> " & lbl & " </span>" & targets &
     "</div></div>"
 
-proc renderEntry*(word, kind, entryId, sensesJson: cstring): cstring =
+proc renderEntry*(word, kind, entryId, sensesJson: kstring): kstring =
   let kindStr = $kind
   if kindStr == "redirect" or kindStr == "alias":
     return renderRedirectCard(word, kind, entryId)
-
   if sensesJson == "" or sensesJson == "[]":
     return ""
 
-  var node: JsObject
-  {.
-    emit: ["""try { """, node, """ = JSON.parse(""", sensesJson, """); } catch(e) {}"""]
-  .}
-  if node.isNil or jsLength(node) == 0:
+  let node = parse(sensesJson)
+  if node.isNil or node.len == 0:
     return ""
 
-  var html: cstring = ""
-  var isGroup: bool
-  {.emit: [isGroup, " = !!(", node, " && ", node, "['group']);"].}
-
-  if isGroup:
-    let variants = jsGet(node, "variants")
+  var html: kstring = ""
+  if node.hasField("group"):
+    let variants = node["variants"]
     if variants.isNil:
       return ""
-    let variantCount = jsLength(variants)
+    let variantCount = variants.len
     for i in 0 ..< variantCount:
-      let v = jsItem(variants, i)
-      let vw = jsStr(jsGet(v, "word"))
-      let vk = jsStr(jsGet(v, "kind"))
-      let ss = jsGet(v, "senses")
-      let displayWord: cstring = if vw != "" and vw != "null": vw else: word
+      let v = variants[i]
+      let vw = safeStr(v["word"])
+      let vk = safeStr(v["kind"])
+      let ss = v["senses"]
+      let displayWord = if isValidString(vw): vw else: word
       let showBadge = not (variantCount == 1 and $vk == "nonstandard")
       html =
         html & "<div class=\"variant\">" & "<div class=\"variant-head\"><em>" &
         htmlEsc(displayWord) & "</em>" & (if showBadge: kindBadgeHtml(vk)
         else: "") & "</div>" & "<ol class=\"sense-list\">"
       if not ss.isNil:
-        for j in 0 ..< jsLength(ss):
-          let isNonstandard = $vk == "nonstandard"
+        let isNonstandard = $vk == "nonstandard"
+        for j in 0 ..< ss.len:
           html =
             html &
             renderSense(
-              jsItem(ss, j),
+              ss[j],
               displayWord,
               suppressXrefGroups = false,
               xrefsLabel =
                 if isNonstandard:
-                  cstring("tidak-baku")
+                  kstring("tidak-baku")
                 else:
                   "",
             )
       html = html & "</ol></div>"
   else:
     html = "<ol class=\"sense-list\">"
-    for i in 0 ..< jsLength(node):
-      html = html & renderSense(jsItem(node, i), word)
+    for i in 0 ..< node.len:
+      html = html & renderSense(node[i], word)
     html = html & "</ol>"
 
   return html
 
-proc buildResultCards*(rows: seq[seq[cstring]]): cstring =
-  var html: cstring = ""
+proc buildResultCards*(rows: seq[seq[kstring]]): kstring =
+  var html: kstring = ""
   for row in rows:
     if row.len < 4:
       continue
     let id = row[0]
     let word = row[2]
     let kind = row[3]
-
     let sensesJson = fetchEntrySenses(id, word, kind)
     let syllable = fetchEntrySyllable(sensesJson)
-    let syllableHtml: cstring =
+    let syllableHtml: kstring =
       if isValidString(syllable):
         " <span class=\"entry-syllable\" title=\"Suku kata\">(" & htmlEsc(syllable) &
           ")</span>"

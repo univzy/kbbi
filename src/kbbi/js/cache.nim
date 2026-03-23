@@ -1,11 +1,13 @@
+import karax/[kbase]
+
 type LRUCache* = object
-  entries*: seq[(cstring, cstring)]
+  entries*: seq[(kstring, kstring)]
   maxSize*: int
 
 proc newLRUCache*(maxSize: int): LRUCache =
   LRUCache(entries: @[], maxSize: maxSize)
 
-proc lruGet*(cache: var LRUCache, key: cstring): cstring =
+proc lruGet*(cache: var LRUCache, key: kstring): kstring =
   for i in 0 ..< cache.entries.len:
     if cache.entries[i][0] == key:
       let val = cache.entries[i][1]
@@ -14,7 +16,7 @@ proc lruGet*(cache: var LRUCache, key: cstring): cstring =
       return val
   return ""
 
-proc lruSet*(cache: var LRUCache, key: cstring, value: cstring) =
+proc lruSet*(cache: var LRUCache, key: kstring, value: kstring) =
   for i in 0 ..< cache.entries.len:
     if cache.entries[i][0] == key:
       cache.entries.delete(i)

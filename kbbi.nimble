@@ -30,3 +30,4 @@ requires "nim >= 2.2.8"
 
 requires "zippy >= 0.10.19"
 requires "db_connector >= 0.1.0"
+requires "karax >= 1.5.0"

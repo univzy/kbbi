@@ -12,7 +12,9 @@ var dbLoading*: bool = false
 var kategoriMap*: JsonNode = nil
 var wordCache*: LRUCache
 
-proc safeStr(node: JsonNode): kstring {.importcpp: "String(#||'')".}
+proc safeStr(
+  node: JsonNode
+): kstring {.importcpp: "(function(v){return v==null?'':String(v)})(#)".}
 
 proc dbQuery*(sql: kstring): JsonNode =
   var arr: JsonNode

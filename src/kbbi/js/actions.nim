@@ -56,7 +56,10 @@ proc doSearchWith*(query: kstring, mode: SearchMode) =
         proc() =
           let resEl = document.getElementById("result")
           if not resEl.isNil:
-            smoothScroll(resEl)
+            if prefersReducedMotion():
+              scrollIntoViewNearest(resEl)
+            else:
+              smoothScroll(resEl)
       )
   )
 
@@ -105,7 +108,10 @@ proc nimSearchById*(id: kstring) {.exportc.} =
         proc() =
           let resEl = document.getElementById("result")
           if not resEl.isNil:
-            smoothScroll(resEl)
+            if prefersReducedMotion():
+              scrollIntoViewNearest(resEl)
+            else:
+              smoothScroll(resEl)
       )
   )
 
@@ -136,7 +142,10 @@ proc nimKat*(jenis, nilai: kstring) {.exportc.} =
         proc() =
           let resElKat = document.getElementById("result")
           if not resElKat.isNil:
-            smoothScroll(resElKat)
+            if prefersReducedMotion():
+              scrollIntoViewNearest(resElKat)
+            else:
+              smoothScroll(resElKat)
       )
   )
 
@@ -144,17 +153,20 @@ proc handleResultClick*(ev: Event) =
   let target = cast[kdom.Element](ev.target)
   if target.isNil:
     return
-  let action = target.getAttribute("data-action")
+  let actionEl = target.closest("[data-action]")
+  if actionEl.isNil:
+    return
+  let action = actionEl.getAttribute("data-action")
   if action == "search":
-    let q = target.getAttribute("data-query")
+    let q = actionEl.getAttribute("data-query")
     if q != "":
       nimSearch(q)
   elif action == "search-id":
-    let id = target.getAttribute("data-id")
+    let id = actionEl.getAttribute("data-id")
     if id != "":
       nimSearchById(id)
   elif action == "filter-kat":
-    let jenis = target.getAttribute("data-jenis")
-    let nilai = target.getAttribute("data-nilai")
+    let jenis = actionEl.getAttribute("data-jenis")
+    let nilai = actionEl.getAttribute("data-nilai")
     if jenis != "" and nilai != "":
       nimKat(jenis, nilai)

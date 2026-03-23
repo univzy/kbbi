@@ -26,6 +26,10 @@ proc smoothScroll*(
   el: Element
 ) {.importcpp: "#.scrollIntoView({behavior:'smooth',block:'start'})".}
 
+proc prefersReducedMotion*(): bool {.
+  importcpp: "window.matchMedia('(prefers-reduced-motion: reduce)').matches"
+.}
+
 proc requestAnimationFrame*(fn: proc()) {.importcpp: "requestAnimationFrame(#)".}
 
 proc setGlobalCpSelect*(

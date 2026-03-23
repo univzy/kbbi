@@ -32,9 +32,6 @@ proc renderHistorySection*(): VNode =
           "data-query" = h,
         ):
           proc onclick(ev: Event, n: VNode) =
-            let target = cast[kdom.Element](ev.target)
-            let q = target.getAttribute("data-query")
-            if q != "":
-              nimSearch(q)
+            nimSearch(h)
 
           text h

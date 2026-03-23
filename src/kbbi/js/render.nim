@@ -155,7 +155,7 @@ proc renderSense*(
       else:
         ""
     badges =
-      badges & "<span class=\"badge bidang\"" & bdTitle & ">[" & htmlEsc(bd) & "]</span>"
+      badges & "<span class=\"badge bidang\"" & bdTitle & ">" & htmlEsc(bd) & "</span>"
   if isValidString(r):
     badges = badges & badgeWithTooltip("ragam", r, "ragam")
   badges = badges & renderMarkerBadges(m)
@@ -237,7 +237,7 @@ proc renderRedirectCard*(word, kind, entryId: kstring): kstring =
         if isValidString(w):
           links = links & buildDataButton(w, "search-id", id, w)
       if links != "":
-        targets = "<div class=\"xref-plain\">" & links & "</div>"
+        targets = "<div class=\"xref-group\">" & xrefGroupLabel("tidak-baku") & links & "</div>"
     if targets == "":
       let xgRows = getResultRows(
         dbQuery(
@@ -255,7 +255,7 @@ proc renderRedirectCard*(word, kind, entryId: kstring): kstring =
           if isValidString(w):
             links = links & buildDataButton(w, "search-id", id, w)
         if links != "":
-          targets = "<div class=\"xref-group\">" & links & "</div>"
+          targets = "<div class=\"xref-group\">" & xrefGroupLabel("tidak-baku") & links & "</div>"
     if targets == "":
       let revRows = getResultRows(
         dbQuery(
@@ -273,7 +273,7 @@ proc renderRedirectCard*(word, kind, entryId: kstring): kstring =
           if isValidString(w):
             links = links & buildDataButton(w, "search-id", id, w)
         if links != "":
-          targets = "<div class=\"xref-plain\">" & links & "</div>"
+          targets = "<div class=\"xref-group\">" & xrefGroupLabel("tidak-baku") & links & "</div>"
 
   let lbl: kstring =
     case $kind

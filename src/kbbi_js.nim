@@ -133,11 +133,17 @@ proc createDom(): VNode =
             span(class = "sqljs-dot")
             text "Data: kbbi.db → sql.js wasm"
         tdiv:
-          text "Data resmi KBBI · Source: "
+          a(
+            href = "https://kbbi.kemendikdasmen.go.id/",
+            target = "_blank",
+            class = "kbbi-link",
+          ):
+            text "Data resmi KBBI"
+          text " · Source: "
           a(
             href = "https://github.com/univzy/kbbi",
             target = "_blank",
-            class = "kbbi-link",
+            class = "univzy-link",
           ):
             text "kbbi.nim"
           text " · "

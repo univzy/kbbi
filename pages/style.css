@@ -388,7 +388,6 @@ body {
   display: flex;
   background: var(--surface);
   border: 1px solid var(--magenta-dim);
-
   transition:
     border-color 0.2s,
     box-shadow 0.2s;
@@ -632,10 +631,10 @@ body {
     rgba(0, 245, 255, 0.4),
     transparent
   );
-  animation: panelScan 2.5s linear infinite;
+  animation: panel-scan 2.5s linear infinite;
   pointer-events: none;
 }
-@keyframes panelScan {
+@keyframes panel-scan {
   0% {
     top: 0%;
     opacity: 1;
@@ -1006,7 +1005,7 @@ body {
   border-left: 3px solid var(--magenta);
   padding: 0 1.2rem;
   transition: border-color 0.2s;
-  animation: fadeUp 0.2s ease both;
+  animation: fade-up 0.2s ease both;
 }
 #kat-filter-row:focus-within {
   border-color: var(--magenta);
@@ -1085,7 +1084,6 @@ body {
   padding: 0;
   margin: -1px;
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
   clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
@@ -1149,9 +1147,9 @@ body {
 
 #result {
   margin-top: 2rem;
-  animation: fadeUp 0.25s ease;
+  animation: fade-up 0.25s ease;
 }
-@keyframes fadeUp {
+@keyframes fade-up {
   from {
     opacity: 0;
     transform: translateY(8px);

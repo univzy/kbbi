@@ -83,7 +83,6 @@ proc doSearch*() =
     return
   state.isLoading = true
   redraw()
-  pushState("/" & encodeURIComponent(q))
   doSearchWith(q, state.mode)
 
 proc nimSearch*(word: kstring) {.exportc.} =
@@ -92,7 +91,6 @@ proc nimSearch*(word: kstring) {.exportc.} =
   state.katFilter = ""
   state.isLoading = true
   redraw()
-  pushState("/" & encodeURIComponent(word))
   doSearchWith(word, ModeAuto)
 
 proc nimSearchById*(id: kstring) {.exportc.} =
@@ -101,7 +99,6 @@ proc nimSearchById*(id: kstring) {.exportc.} =
   if res.word != "":
     state.query = res.word
     updateHistory(res.word)
-    pushState("/" & encodeURIComponent(res.word))
   state.resultHtml = res.html
   state.hasResult = true
   redraw()

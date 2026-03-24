@@ -86,6 +86,7 @@ proc loadDatabase*() {.async.} =
     let inp = document.getElementById("search-input")
     if not inp.isNil:
       inp.focus()
+    state.pendingInitSearch = true
   except:
     dbLoading = false
     state.dbError = "Gagal memuat database. Periksa koneksi atau cache."

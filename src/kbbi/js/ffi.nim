@@ -68,6 +68,14 @@ proc jsStrEsc*(s: kstring): kstring {.
 """
 .}
 
+proc pushState*(url: kstring) {.importcpp: "history.pushState(null,'',#)".}
+
+proc replaceState*(url: kstring) {.importcpp: "history.replaceState(null,'',#)".}
+
+proc pathToQuery*(
+  path: kstring
+): kstring {.importcpp: "decodeURIComponent((#).slice(1))".}
+
 proc buildDataButton*(
     text, action, attrValue: kstring, ariaLabel: kstring = ""
 ): kstring =

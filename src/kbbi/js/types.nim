@@ -24,11 +24,12 @@ type AppState* = object
   dbError*: kstring
   dropdownOpen*: bool
   highlightedIdx*: int
+  pendingInitSearch*: bool
 
 type DropdownItem* = object
   value*: SearchMode
   label*: kstring
   hint*: kstring
-  group*: kstring # "mode" | "filter" | "daftar"
+  group*: kstring
   isCyan*: bool
   isMag*: bool

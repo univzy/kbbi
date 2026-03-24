@@ -59,7 +59,7 @@ jobs:
           EOF
 
       - name: Remove kbbi.db from pages dir
-          run: rm pages/kbbi.db
+        run: rm pages/kbbi.db
 
       - name: Cache nimble
         id: cache-nimble

@@ -25,6 +25,7 @@ proc renderHistorySection*(): VNode =
       id = "history-list", role = "list", "aria-label" = "Riwayat pencarian terakhir"
     ):
       for h in searchHistory:
+        let word = h
         button(
           class = "hist-item",
           role = "listitem",
@@ -32,9 +33,6 @@ proc renderHistorySection*(): VNode =
           "data-query" = h,
         ):
           proc onclick(ev: Event, n: VNode) =
-            let el = cast[kdom.Element](ev.currentTarget)
-            let q = el.getAttribute("data-query")
-            if q != "":
-              nimSearch(q)
+            nimSearch(word)
 
           text h

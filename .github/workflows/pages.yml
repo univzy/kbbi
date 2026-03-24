@@ -1,31 +1,31 @@
-name: Deploy to GitHub Pages
+name: Deploy to Cloudflare Pages
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'pages/**'
-      - 'src/kbbi_js.nim'
+      - "pages/**"
+      - "src/kbbi_js.nim"
+      - "src/js/**"
   release:
     types: [published]
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
+  deployments: write
 
 concurrency:
   group: pages
   cancel-in-progress: true
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Download kbbi.db
         run: |
@@ -51,12 +51,11 @@ jobs:
           key: ${{ runner.os }}-nimble-${{ hashFiles('*.nimble') }}
           restore-keys: |
             ${{ runner.os }}-nimble-
-        if: runner.os != 'Windows'
 
       - name: Install Nim
         uses: nim-lang/setup-nimble-action@v1
         with:
-          nimble-version: 'latest'
+          nimble-version: "latest"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install dependencies
@@ -81,19 +80,9 @@ jobs:
           npx html-minifier-terser pages/index.html -o pages/index.html --collapse-whitespace --remove-comments --minify-css --minify-js
           cp -rf assets pages/
 
-      - name: Upload Pages artifact
-        id: deployment
-        uses: actions/upload-pages-artifact@v3
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
         with:
-          path: pages/
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy pages/ --project-name=kbbi

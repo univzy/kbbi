@@ -84,9 +84,10 @@ proc searchById*(id: kstring): SearchResult =
       error: SearchNotFound,
     )
   let word = rows[0][2]
+  let nilai = rows[0][1]
   let titleClean = word.removeNumberTag()
   let html = buildResultHeader("Hasil untuk", titleClean) & buildResultCards(rows)
-  return SearchResult(html: html, found: true, word: word, error: SearchOk)
+  return SearchResult(html: html, found: true, word: nilai, error: SearchOk)
 
 proc searchExact*(query: kstring): SearchResult =
   let norm = normalizeWord(query)

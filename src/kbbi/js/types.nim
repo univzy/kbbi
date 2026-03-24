@@ -29,6 +29,6 @@ type DropdownItem* = object
   value*: SearchMode
   label*: kstring
   hint*: kstring
-  group*: kstring # "mode" | "filter" | "daftar"
+  group*: kstring
   isCyan*: bool
   isMag*: bool

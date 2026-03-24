@@ -1,7 +1,7 @@
 import karax/[kbase, vdom, karaxdsl, karax, kdom]
 import kbbi/js/[types, modes, appstate, ffi, actions, loader, history]
 import kbbi/js/ui/[dropdown, overlay, historyui, hints]
-export renderModeHints # compact: registered in vcomponents, used via karaxdsl
+export renderModeHints
 
 proc setupGlobalListeners() =
   document.body.addEventListener(

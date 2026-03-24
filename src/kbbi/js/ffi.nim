@@ -72,9 +72,16 @@ proc pushState*(url: kstring) {.importcpp: "history.pushState(null,'',#)".}
 
 proc replaceState*(url: kstring) {.importcpp: "history.replaceState(null,'',#)".}
 
-proc pathToQuery*(
-  path: kstring
-): kstring {.importcpp: "decodeURIComponent((#).slice(1))".}
+proc pathToQuery*(path: kstring): kstring =
+  {.
+    emit: """
+    try {
+      `result` = decodeURIComponent(String(`path` || '').slice(1));
+    } catch (e) {
+      `result` = String(`path` || '').slice(1);
+    }
+  """
+  .}
 
 proc buildDataButton*(
     text, action, attrValue: kstring, ariaLabel: kstring = ""

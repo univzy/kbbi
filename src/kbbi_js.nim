@@ -26,12 +26,18 @@ proc setupGlobalListeners() =
           state.query = query
           state.mode = ModeAuto
           state.katFilter = ""
-          state.isLoading = true
-          redraw()
-          doSearchWith(query, ModeAuto)
+          if state.isDbReady:
+            state.isLoading = true
+            redraw()
+            doSearchWith(query, ModeAuto)
+          else:
+            state.pendingInitSearch = true
+            redraw()
       else:
         state.query = ""
         state.hasResult = false
+        state.pendingInitSearch = false
+        state.isLoading = false
         redraw(),
   )
 

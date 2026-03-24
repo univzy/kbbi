@@ -16,8 +16,35 @@ proc setupGlobalListeners() =
     ,
   )
   setGlobalCpSelect(pickModeByString)
+  window.addEventListener(
+    "popstate",
+    proc(ev: Event) =
+      let path = kstring(window.location.pathname)
+      if path.len > 1:
+        let query = pathToQuery(path)
+        if query.len > 0:
+          state.query = query
+          state.mode = ModeAuto
+          state.katFilter = ""
+          if state.isDbReady:
+            state.isLoading = true
+            redraw()
+            doSearchWith(query, ModeAuto)
+          else:
+            state.pendingInitSearch = true
+            redraw()
+      else:
+        state.query = ""
+        state.hasResult = false
+        state.pendingInitSearch = false
+        state.isLoading = false
+        redraw(),
+  )
 
 proc createDom(): VNode =
+  if state.pendingInitSearch and state.isDbReady and state.query.len > 0:
+    state.pendingInitSearch = false
+    doSearchWith(state.query, ModeAuto)
   buildHtml(tdiv(id = "karax-root")):
     renderLoadOverlay()
 
@@ -162,5 +189,11 @@ proc main() =
   setupGlobalListeners()
   setRenderer createDom
   discard loadDatabase()
+  let initPath = kstring(window.location.pathname)
+  if initPath.len > 1:
+    let initQuery = pathToQuery(initPath)
+    if initQuery.len > 0:
+      state.query = initQuery
+      state.pendingInitSearch = true
 
 main()

@@ -24,6 +24,7 @@ type AppState* = object
   dbError*: kstring
   dropdownOpen*: bool
   highlightedIdx*: int
+  pendingInitSearch*: bool
 
 type DropdownItem* = object
   value*: SearchMode

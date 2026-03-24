@@ -7,7 +7,7 @@ on:
     paths:
       - "pages/**"
       - "src/kbbi_js.nim"
-      - "src/js/**"
+      - "src/kbbi/js/**"
   release:
     types: [published]
   workflow_dispatch:
@@ -42,6 +42,24 @@ jobs:
           fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload kbbi.db to Hugging Face
+        run: |
+          pip install huggingface_hub
+          python3 - <<'EOF'
+          from huggingface_hub import HfApi
+          api = HfApi()
+          api.upload_file(
+              path_or_fileobj="pages/kbbi.db",
+              path_in_repo="kbbi.db",
+              repo_id="univzy/kbbi",
+              repo_type="dataset",
+              token="${{ secrets.HF_TOKEN }}",
+          )
+          EOF
+
+      - name: Remove kbbi.db from pages dir
+          run: rm pages/kbbi.db
 
       - name: Cache nimble
         id: cache-nimble

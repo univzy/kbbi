@@ -30,7 +30,7 @@ proc loadDatabase*() {.async.} =
       emit: """
       try {
         const CACHE_NAME = '`cacheKey`';
-        const URL = 'kbbi.db';
+        const URL = 'https://huggingface.co/datasets/univzy/kbbi/resolve/main/kbbi.db';
         const loadBar = document.querySelector('.load-bar');
         const loadStatus = document.getElementById('load-status');
         const cache = await caches.open(CACHE_NAME);
@@ -68,7 +68,7 @@ proc loadDatabase*() {.async.} =
         }
         `resp` = response;
       } catch(e) {
-        `resp` = await fetch('kbbi.db');
+        `resp` = await fetch('https://huggingface.co/datasets/univzy/kbbi/resolve/main/kbbi.db');
         const loadBar = document.querySelector('.load-bar');
         if (loadBar) loadBar.style.width = '100%';
       }

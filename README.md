@@ -38,7 +38,7 @@
 <div align="center">
   <h2>🌐 Live Demo</h2>
   <a href="https://kbbi.univzy.tech/">
-    <img title="KBBI-Live-Demo" alt="KBBI-Live-Demo" src="https://img.shields.io/badge/Live%20Demo-univzy.github.io%2Fkbbi-blue?style=for-the-badge&logo=github&logoColor=white">
+    <img title="KBBI-Live-Demo" alt="KBBI-Live-Demo" src="https://img.shields.io/badge/Live%20Demo-kbbi.univzy.tech-blue?style=for-the-badge&logo=github&logoColor=white">
   </a>
 </div>
 

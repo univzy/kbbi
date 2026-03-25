@@ -50,21 +50,17 @@ jobs:
         run: |
           pip install huggingface_hub
           python3 - <<'EOF'
-          from huggingface_hub import HfApi
+          from huggingface_hub import HfApi, CommitOperationAdd
           api = HfApi()
-          api.upload_file(
-              path_or_fileobj="pages/kbbi.db",
-              path_in_repo="kbbi.db",
+          api.create_commit(
               repo_id="univzy/kbbi",
               repo_type="dataset",
               token="${{ secrets.HF_TOKEN }}",
-          )
-          api.upload_file(
-              path_or_fileobj="pages/kbbi.db.gz",
-              path_in_repo="kbbi.db.gz",
-              repo_id="univzy/kbbi",
-              repo_type="dataset",
-              token="${{ secrets.HF_TOKEN }}",
+              commit_message="Update kbbi.db and kbbi.db.gz",
+              operations=[
+                  CommitOperationAdd(path_in_repo="kbbi.db", path_or_fileobj="pages/kbbi.db"),
+                  CommitOperationAdd(path_in_repo="kbbi.db.gz", path_or_fileobj="pages/kbbi.db.gz"),
+              ],
           )
           EOF
 

@@ -1,5 +1,5 @@
-const CACHE_VERSION = '1.0.1';
-const SHELL_CACHE = `kbbi-shell-v${CACHE_VERSION}`;
+const CACHE_VERSION = '1.1.0';
+const SHELL_CACHE = `kbbi_shell_v${CACHE_VERSION}`;
 const DB_CACHE = `kbbi_cache_vi_${CACHE_VERSION}`;
 
 const KNOWN_CACHES = new Set([SHELL_CACHE, DB_CACHE]);

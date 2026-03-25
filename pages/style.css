@@ -161,7 +161,6 @@ body {
   font-family: var(--font-display);
   font-size: 5rem;
   font-weight: 900;
-  color: var(--accent);
   letter-spacing: 0.15em;
   text-shadow:
     0 0 20px var(--accent-glow),
@@ -169,8 +168,14 @@ body {
   animation: flicker 3s infinite;
   position: relative;
 }
+.load-logo .re {
+  color: #ffffff;
+}
+.load-logo .kbbi {
+  color: var(--accent);
+}
 .load-logo::after {
-  content: "re:KBBI";
+  content: attr(data-text);
   position: absolute;
   left: 3px;
   top: 3px;
@@ -279,7 +284,7 @@ body {
   position: relative;
 }
 .top-bar::after {
-  content: "//  KAMUS BESAR BAHASA INDONESIA  //  NIGHT CITY EDITION  //  v1.0.1  //";
+  content: "//  KAMUS BESAR BAHASA INDONESIA  //  NIGHT CITY EDITION  //  v1.1.0  //";
   position: absolute;
   top: 5px;
   right: 1rem;

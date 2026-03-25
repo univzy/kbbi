@@ -1,5 +1,5 @@
 # Pemutakhiran KBBI VI Oktober 2025
-const KbbiVersion = "1.0.1"
+const KbbiVersion = "1.1.0"
 
 const cacheKey* = "kbbi_cache_vi_" & KbbiVersion
 const keySearchHistory* = "kbbi_search_history"

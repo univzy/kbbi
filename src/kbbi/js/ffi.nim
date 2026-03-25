@@ -2,10 +2,6 @@ import std/jsffi except `&`
 import std/[asyncjs]
 import karax/[kbase, kdom, jstrutils]
 
-proc arrayBuffer*(resp: JsObject): Future[JsObject] {.importcpp: "#.arrayBuffer()".}
-
-proc uint8Array*(buf: JsObject): JsObject {.importcpp: "new Uint8Array(#)".}
-
 proc initSqlJs*(cfg: JsObject): Future[JsObject] {.importcpp: "initSqlJs(#)".}
 
 proc newDb*(SQL: JsObject, data: JsObject): JsObject {.importcpp: "new #.Database(#)".}

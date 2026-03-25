@@ -87,8 +87,12 @@ proc loadDatabase*() {.async.} =
           let offset = 0;
           for (const c of chunks) { result.set(c, offset); offset += c.byteLength; }
 
-          await cache.put(CACHE_KEY, new Response(result.buffer));
           `dbBytes` = result;
+          try {
+            await cache.put(CACHE_KEY, new Response(result.buffer));
+          } catch (cacheErr) {
+            console.warn('[kbbi] failed to cache database:', cacheErr);
+          }
         }
       } catch(e) {
         console.error('[kbbi] loader error:', e);

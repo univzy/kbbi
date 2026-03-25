@@ -48,8 +48,6 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
   if (url.origin !== location.origin) return;
 
-  if (url.pathname.endsWith('.db')) return;
-
   event.respondWith(
     caches.match(request).then((cached) => {
       if (cached) return cached;

@@ -25,59 +25,81 @@ proc loadDatabase*() {.async.} =
     let SQL = await initSqlJs(sqlCfg)
     initWordCache()
     setLoadStatus("Mengunduh kbbi.db… (0%)")
-    var resp: JsObject
+    var dbBytes: JsObject
     {.
       emit: """
+      const GZ_URL  = 'https://huggingface.co/datasets/univzy/kbbi/resolve/main/kbbi.db.gz';
+      const RAW_URL = 'https://huggingface.co/datasets/univzy/kbbi/resolve/main/kbbi.db';
+      const loadBar    = document.querySelector('.load-bar');
+      const loadStatus = document.getElementById('load-status');
+
+      const useGzip   = typeof DecompressionStream !== 'undefined';
+      const URL       = useGzip ? GZ_URL : RAW_URL;
+      const CACHE_KEY = useGzip ? '`cacheKey`_gz' : '`cacheKey`_raw';
+
       try {
-        const CACHE_NAME = '`cacheKey`';
-        const URL = 'https://huggingface.co/datasets/univzy/kbbi/resolve/main/kbbi.db';
-        const loadBar = document.querySelector('.load-bar');
-        const loadStatus = document.getElementById('load-status');
-        const cache = await caches.open(CACHE_NAME);
-        let response = await cache.match(URL);
-        if (!response) {
+        const cache = await caches.open('`cacheKey`');
+        let cached = await cache.match(CACHE_KEY);
+        if (cached) {
+          if (loadBar)    loadBar.style.width = '100%';
+          if (loadStatus) loadStatus.textContent = 'Memuat dari cache… (100%)';
+          `dbBytes` = new Uint8Array(await cached.arrayBuffer());
+        } else {
           const fetched = await fetch(URL, { cache: 'no-store' });
-          if (!fetched.ok) throw new Error('kbbi.db fetch failed: ' + fetched.status);
+          if (!fetched.ok) throw new Error('fetch failed: ' + fetched.status);
+
           const contentLength = fetched.headers.get('content-length');
-          if (contentLength) {
-            const total = parseInt(contentLength, 10);
-            const reader = fetched.body.getReader();
-            let loaded = 0;
-            const chunks = [];
-            try {
-              while (true) {
-                const {done, value} = await reader.read();
-                if (done) break;
-                chunks.push(value);
-                loaded += value.length;
+          const total = contentLength ? parseInt(contentLength, 10) : 0;
+
+          let loaded = 0;
+          const progressTransform = new TransformStream({
+            transform(chunk, controller) {
+              loaded += chunk.byteLength;
+              if (total > 0) {
                 const pct = Math.min(100, Math.round((loaded / total) * 100));
                 if (loadBar) loadBar.style.width = pct + '%';
                 if (loadStatus && pct !== 100) loadStatus.textContent = 'Mengunduh kbbi.db… (' + pct + '%)';
-                if (loadStatus && pct === 100) loadStatus.textContent = 'Menginisialisasi database...';
+                if (loadStatus && pct === 100) loadStatus.textContent = 'Menginisialisasi database…';
               }
-            } finally { reader.releaseLock(); }
-            const blob = new Blob(chunks);
-            response = new Response(blob);
-          } else {
-            response = fetched;
+              controller.enqueue(chunk);
+            }
+          });
+
+          let readable = fetched.body.pipeThrough(progressTransform);
+          if (useGzip) readable = readable.pipeThrough(new DecompressionStream('gzip'));
+
+          const reader = readable.getReader();
+          const chunks = [];
+          let decompressedBytes = 0;
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            chunks.push(value);
+            decompressedBytes += value.byteLength;
+            if (loaded >= total && total > 0 && useGzip) {
+              const mb = (decompressedBytes / 1024 / 1024).toFixed(1);
+              if (loadStatus) loadStatus.textContent = 'Mengekstrak… ' + mb + ' MB';
+            }
           }
-          await cache.put(URL, response.clone());
-        } else {
-          if (loadBar) loadBar.style.width = '100%';
-          if (loadStatus) loadStatus.textContent = 'Memuat dari cache… (100%)';
+
+          if (loadStatus) loadStatus.textContent = 'Menyimpan ke cache…';
+          const result = new Uint8Array(decompressedBytes);
+          let offset = 0;
+          for (const c of chunks) { result.set(c, offset); offset += c.byteLength; }
+
+          await cache.put(CACHE_KEY, new Response(result.buffer));
+          `dbBytes` = result;
         }
-        `resp` = response;
       } catch(e) {
-        `resp` = await fetch('https://huggingface.co/datasets/univzy/kbbi/resolve/main/kbbi.db');
-        const loadBar = document.querySelector('.load-bar');
+        console.error('[kbbi] loader error:', e);
+        const r = await fetch(RAW_URL);
+        `dbBytes` = new Uint8Array(await r.arrayBuffer());
         if (loadBar) loadBar.style.width = '100%';
       }
     """
     .}
     setLoadStatus("Membuka database…")
-    let buf = await arrayBuffer(resp)
-    let u8 = uint8Array(buf)
-    sqlDb = newDb(SQL, u8)
+    sqlDb = newDb(SQL, dbBytes)
     loadKategori()
     dbLoading = false
     state.isDbReady = true

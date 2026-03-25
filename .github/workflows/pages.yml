@@ -43,7 +43,10 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload kbbi.db to Hugging Face
+      - name: Compress kbbi.db → kbbi.db.gz
+        run: gzip -9 -k pages/kbbi.db
+
+      - name: Upload kbbi.db and kbbi.db.gz to Hugging Face
         run: |
           pip install huggingface_hub
           python3 - <<'EOF'
@@ -56,10 +59,17 @@ jobs:
               repo_type="dataset",
               token="${{ secrets.HF_TOKEN }}",
           )
+          api.upload_file(
+              path_or_fileobj="pages/kbbi.db.gz",
+              path_in_repo="kbbi.db.gz",
+              repo_id="univzy/kbbi",
+              repo_type="dataset",
+              token="${{ secrets.HF_TOKEN }}",
+          )
           EOF
 
-      - name: Remove kbbi.db from pages dir
-        run: rm pages/kbbi.db
+      - name: Remove kbbi.db and kbbi.db.gz from pages dir
+        run: rm pages/kbbi.db pages/kbbi.db.gz
 
       - name: Cache nimble
         id: cache-nimble
